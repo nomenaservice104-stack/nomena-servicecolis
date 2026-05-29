@@ -214,6 +214,7 @@
     </div>
   </div>
 
+  <!-- Modal Caméra -->
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas"></canvas>
@@ -223,10 +224,11 @@
     </div>
   </div>
 
+  <!-- Loading OCR -->
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
     <p>Extraction OCR en cours...</p>
-    <p style="font-size: 0.8em; color: #aaa;">Cela prend quelques secondes</p>
+    <p style="font-size: 0.8em; color: #aaa;">Prend tout le contenu en un seul coup</p>
   </div>
 
   <script>
@@ -235,7 +237,6 @@
     const { createClient } = supabase;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // Clé API FREE OCR.space (Tu peux mettre la tienne ici si besoin)
     const OCRSPACE_API_KEY = "helloworld"; 
 
     let colisList = JSON.parse(localStorage.getItem("colis")) || [];
@@ -258,7 +259,7 @@
       modal.classList.add('active');
       
       navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
       }).then(stream => {
         videoStream = stream;
         const video = document.getElementById('cameraVideo');
@@ -278,7 +279,7 @@
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       closeCamera();
       
       performOCR(imageDataUrl);
@@ -301,9 +302,9 @@
         const formData = new FormData();
         formData.append('base64Image', imageDataUrl);
         formData.append('apikey', OCRSPACE_API_KEY);
-        formData.append('language', 'fre'); // CORRECTION ICI : 'fre' au lieu de 'fra' pour éviter l'erreur E201
+        formData.append('language', 'fre');
         formData.append('isOverlayRequired', 'false');
-        formData.append('OCREngine', '2'); // Utilise le moteur v2 beaucoup plus rapide et précis
+        formData.append('OCREngine', '2'); // V2 capture l'intégralité du texte d'une seule traite
         
         const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
           method: 'POST',
@@ -317,12 +318,13 @@
         }
         
         const extractedText = ocrResult.ParsedResults[0].ParsedText;
+        // Découpage intelligent amélioré
         const extractedData = extractFieldsFromOCR(extractedText);
         
         fillFormFromOCR(extractedData);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('✔ OCR terminé !\n\nChamps détectés remplis automatiquement.');
+        alert('✔ Tout le document a été lu d\'un coup !\n\nChamps complétés.');
         
       } catch (error) {
         document.getElementById('ocrLoading').classList.remove('active');
@@ -331,31 +333,43 @@
       }
     }
 
+    // === CORRECTION ANOMALIE DÉTECTION N° BC / N° COLIS ===
     function extractFieldsFromOCR(text) {
       const result = { noBordereau: '', noColis: '', villeOrigine: '', villeDestination: '', client: '', adresse: '', pesoColis: '', vehiculeArrivee: '' };
       
-      const bcMatch = text.match(/N°\s*BC[:\s]*([^\n]+)/i) || text.match(/BC[:\s]*([^\n]+)/i);
+      // Nettoyage initial : supprime les espaces insécables bizarres
+      const cleanText = text.replace(/\r/g, "").trim();
+
+      // 1. Extraction N° BC (Empêche de déborder sur "N° Colis" s'ils sont collés)
+      const bcMatch = cleanText.match(/N°?\s*BC[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/BC[:\s]*([A-Z0-9\-_]+)/i);
       if (bcMatch) result.noBordereau = bcMatch[1].trim();
       
-      const colisMatch = text.match(/N°\s*COLIS[:\s]*([^\n]+)/i) || text.match(/COLIS[:\s]*([^\n]+)/i);
+      // 2. Extraction N° CO / Colis
+      const colisMatch = cleanText.match(/N°?\s*COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/N°?\s*CO[:\s]*([A-Z0-9\-_]+)/i);
       if (colisMatch) result.noColis = colisMatch[1].trim();
       
-      const expMatch = text.match(/EXP[:\s]*([A-Z]+)/i);
+      // Si par malheur le N° BC contient le mot "COLIS", on le nettoie à la volée
+      if (result.noBordereau.toLowerCase().includes("colis")) {
+        result.noBordereau = result.noBordereau.replace(/colis.*/i, "").trim();
+      }
+
+      // 3. Extraction du reste du document (Toutes les informations d'un coup)
+      const expMatch = cleanText.match(/EXP[:\s]*([A-Z]+)/i) || cleanText.match(/ORIGINE[:\s]*([A-Z]+)/i);
       if (expMatch) result.villeOrigine = expMatch[1].trim();
       
-      const destMatch = text.match(/DEST[:\s]*([A-Z0-9]+)/i);
+      const destMatch = cleanText.match(/DEST[:\s]*([A-Z0-9]+)/i) || cleanText.match(/DESTINATION[:\s]*([A-Z0-9]+)/i);
       if (destMatch) result.villeDestination = destMatch[1].trim();
       
-      const clientMatch = text.match(/CLIENT\s*EXP[:\s]*([^\n]+)/i) || text.match(/CLIENT[:\s]*([^\n]+)/i);
+      const clientMatch = cleanText.match(/CLIENT\s*EXP[:\s]*([^\n]+)/i) || cleanText.match(/CLIENT[:\s]*([^\n]+)/i);
       if (clientMatch) result.client = clientMatch[1].trim();
       
-      const adresseMatch = text.match(/CLIENT\s*DEST[:\s]*([^\n]+)/i) || text.match(/ADRESSE[:\s]*([^\n]+)/i);
+      const adresseMatch = cleanText.match(/CLIENT\s*DEST[:\s]*([^\n]+)/i) || cleanText.match(/ADRESSE[:\s]*([^\n]+)/i);
       if (adresseMatch) result.adresse = adresseMatch[1].trim();
       
-      const poidsMatch = text.match(/POIDS\s*TOTAL[:\s]*([\d.,]+)/i) || text.match(/POIDS[:\s]*([\d.,]+)/i);
+      const poidsMatch = cleanText.match(/POIDS\s*TOTAL[:\s]*([\d.,]+)/i) || cleanText.match(/POIDS[:\s]*([\d.,]+)/i) || cleanText.match(/PESO[:\s]*([\d.,]+)/i);
       if (poidsMatch) result.pesoColis = poidsMatch[1].trim();
       
-      const vehMatch = text.match(/VÉHICULE[:\s]*([^\n]+)/i) || text.match(/VEH[:\s]*([^\n]+)/i);
+      const vehMatch = cleanText.match(/VÉHICULE[:\s]*([^\n]+)/i) || cleanText.match(/VEH[:\s]*([^\n]+)/i);
       if (vehMatch) result.vehiculeArrivee = vehMatch[1].trim();
       
       return result;
@@ -374,7 +388,7 @@
       document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // === FONCTIONS BACKUP ET BASE DE DONNÉES LOCALES ===
+    // === FONCTIONS LOGICIEL DE BASE ===
     function exportBackup() {
       const data = JSON.stringify(colisList, null, 2);
       const blob = new Blob([data], { type: "application/json" });
@@ -409,22 +423,6 @@
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(file);
       });
-    }
-
-    function downloadSavedPdf(index) {
-      const c = colisList[index];
-      if (!c || !c.pdfData) return;
-      const a = document.createElement("a");
-      a.href = c.pdfData;
-      a.download = `colis_${c.noColis || 'sans_nom'}.pdf`;
-      a.click();
-    }
-
-    function openSavedPdf(index) {
-      const c = colisList[index];
-      if (!c || !c.pdfData) return;
-      const w = window.open("");
-      if (w) w.document.write('<iframe src="' + c.pdfData + '" style="border:0; width:100%; height:100vh;"></iframe>');
     }
 
     function renderList(filter = "all", search = "") {
@@ -522,7 +520,6 @@
       fillForm(index);
     }
 
-    // === ENREGISTREMENT SUPABASE CORRIGÉ ===
     async function saveToSupabase(localColis) {
       const payload = {
         id: localColis.id || undefined,
@@ -564,7 +561,7 @@
           return data;
         }
       } catch (err) {
-        console.error("Erreur Supabase lors de l'enregistrement :", err);
+        console.error("Erreur Supabase :", err);
         alert("Erreur Supabase: " + err.message);
         return null;
       }
@@ -672,7 +669,7 @@
       if (editingIndex >= 0) colisList[editingIndex] = newColis; else colisList[0] = newColis;
       saveData();
 
-      alert(editingIndex >= 0 ? "Colis MODIFIÉ avec succès !" : "Colis ENREGISTRÉ dans Supabase !");
+      alert(editingIndex >= 0 ? "Colis MODIFIÉ !" : "Colis ENREGISTRÉ !");
       editingIndex = -1;
       selectedIndex = -1;
       this.reset();
