@@ -85,7 +85,7 @@
     #cameraModal .btn-close { background: #d32f2f; }
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 1001; text-align: center; }
     .ocr-loading.active { display: block; }
-    .ocr-loading spin { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; }
+    .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @media print { body * { visibility: hidden; } #receiptArea, #receiptArea * { visibility: visible; } #receiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; border: none; } .receipt-actions { display: none !important; } }
     @media (max-width: 1200px) { body { overflow-y: auto; } .container { height: auto; flex-direction: column; overflow: visible; } .form-column, .list-column { min-width: 0; width: 100%; max-width: 100%; } .list-column { min-height: 500px; } }
@@ -214,7 +214,6 @@
     </div>
   </div>
 
-  <!-- Modal Caméra -->
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas"></canvas>
@@ -224,9 +223,8 @@
     </div>
   </div>
 
-  <!-- Loading OCR -->
   <div id="ocrLoading" class="ocr-loading">
-    <div><span>⏳</span></div>
+    <div class="spin"></div>
     <p>Extraction OCR en cours...</p>
     <p style="font-size: 0.8em; color: #aaa;">Cela prend quelques secondes</p>
   </div>
@@ -237,8 +235,8 @@
     const { createClient } = supabase;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // Clé API FREE OCR.space (gratuit jusqu'à 25 000 req/mois)
-    const OCRSPACE_API_KEY = " belongings"; // Clé gratuite - pas de carte requise
+    // Clé API FREE OCR.space (Remplacez par votre clé si besoin)
+    const OCRSPACE_API_KEY = "helloworld"; 
 
     let colisList = JSON.parse(localStorage.getItem("colis")) || [];
     let editingIndex = -1;
@@ -283,7 +281,6 @@
       const imageDataUrl = canvas.toDataURL('image/jpeg');
       closeCamera();
       
-      // Envoyer à OCR.space pour extraction
       performOCR(imageDataUrl);
     }
 
@@ -298,22 +295,15 @@
     }
 
     async function performOCR(imageDataUrl) {
-      // Afficher le loading
       document.getElementById('ocrLoading').classList.add('active');
       
       try {
-        // Convertir base64 en blob
-        const response = await fetch(imageDataUrl);
-        const blob = await response.blob();
-        
-        // Créer FormData pour OCR.space
         const formData = new FormData();
         formData.append('base64Image', imageDataUrl);
-        formData.append('apikey', 'belongs'); // Clé gratuite OCR.space
-        formData.append('language', 'fra'); // Français
+        formData.append('apikey', OCRSPACE_API_KEY); // Changement ici pour utiliser la bonne variable
+        formData.append('language', 'fra');
         formData.append('isOverlayRequired', 'false');
         
-        // Appeler OCR.space API
         const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
           method: 'POST',
           body: formData
@@ -326,67 +316,44 @@
         }
         
         const extractedText = ocrResult.ParsedResults[0].ParsedText;
-        
-        // Extraire les 8 champs du texte OCR
         const extractedData = extractFieldsFromOCR(extractedText);
         
-        // Remplir automatiquement le formulaire
         fillFormFromOCR(extractedData);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('✔ OCR terminé !\n\n8 champs remplis automatiquement :\n- N° BC\n- N° Colis\n- VILLE OR\n- VILLE DEST\n- CLIENT\n- ADRESSE\n- PESO\n- VEH RAM\n\nVérifie les données et complète les champs manquants (DATE ARR, TÉL, etc.).');
+        alert('✔ OCR terminé !\n\n8 champs remplis automatiquement.');
         
       } catch (error) {
         document.getElementById('ocrLoading').classList.remove('active');
         console.error('Erreur OCR:', error);
-        alert('❌ Erreur OCR: ' + error.message + '\n\nEssaie de ressortir la photo plus clairement.');
+        alert('❌ Erreur OCR: ' + error.message + '\n\nEssaie de reprendre la photo plus clairement.');
       }
     }
 
     function extractFieldsFromOCR(text) {
-      const result = {
-        noBordereau: '',
-        noColis: '',
-        villeOrigine: '',
-        villeDestination: '',
-        client: '',
-        adresse: '',
-        pesoColis: '',
-        vehiculeArrivee: ''
-      };
+      const result = { noBordereau: '', noColis: '', villeOrigine: '', villeDestination: '', client: '', adresse: '', pesoColis: '', vehiculeArrivee: '' };
       
-      const lines = text.split('\n').map(l => l.trim());
-      const textUpper = text.toUpperCase();
-      
-      // Extraire N° BC (recherche "N° BC" ou "BC")
       const bcMatch = text.match(/N°\s*BC[:\s]*([^\n]+)/i) || text.match(/BC[:\s]*([^\n]+)/i);
       if (bcMatch) result.noBordereau = bcMatch[1].trim();
       
-      // Extraire N° Colis
       const colisMatch = text.match(/N°\s*COLIS[:\s]*([^\n]+)/i) || text.match(/COLIS[:\s]*([^\n]+)/i);
       if (colisMatch) result.noColis = colisMatch[1].trim();
       
-      // Extraire VILLE OR (EXP)
       const expMatch = text.match(/EXP[:\s]*([A-Z]+)/i);
       if (expMatch) result.villeOrigine = expMatch[1].trim();
       
-      // Extraire VILLE DEST (DEST)
       const destMatch = text.match(/DEST[:\s]*([A-Z0-9]+)/i);
       if (destMatch) result.villeDestination = destMatch[1].trim();
       
-      // Extraire CLIENT (CLIENT EXP)
       const clientMatch = text.match(/CLIENT\s*EXP[:\s]*([^\n]+)/i) || text.match(/CLIENT[:\s]*([^\n]+)/i);
       if (clientMatch) result.client = clientMatch[1].trim();
       
-      // Extraire ADRESSE (CLIENT DEST)
       const adresseMatch = text.match(/CLIENT\s*DEST[:\s]*([^\n]+)/i) || text.match(/ADRESSE[:\s]*([^\n]+)/i);
       if (adresseMatch) result.adresse = adresseMatch[1].trim();
       
-      // Extraire PESO (POIDS TOTAL)
       const poidsMatch = text.match(/POIDS\s*TOTAL[:\s]*([\d.,]+)/i) || text.match(/POIDS[:\s]*([\d.,]+)/i);
       if (poidsMatch) result.pesoColis = poidsMatch[1].trim();
       
-      // Extraire VEHICULE
       const vehMatch = text.match(/VÉHICULE[:\s]*([^\n]+)/i) || text.match(/VEH[:\s]*([^\n]+)/i);
       if (vehMatch) result.vehiculeArrivee = vehMatch[1].trim();
       
@@ -403,12 +370,10 @@
       if (data.pesoColis) document.getElementById('pesoColis').value = data.pesoColis;
       if (data.vehiculeArrivee) document.getElementById('vehiculeArrivee').value = data.vehiculeArrivee;
       
-      // Scroll vers le formulaire
       document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // === FIN FONCTIONS SCANNER ===
-
+    // === FONCTIONS LOGISTIQUE BASIQUES ===
     function exportBackup() {
       const data = JSON.stringify(colisList, null, 2);
       const blob = new Blob([data], { type: "application/json" });
@@ -416,9 +381,8 @@
       const a = document.createElement("a");
       const now = new Date();
       a.href = url;
-      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}_${now.toTimeString().slice(0,8).replace(/:/g,"-")}.json`;
+      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}_.json`;
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function importBackup() {
@@ -428,12 +392,11 @@
       reader.onload = e => {
         try {
           const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported)) { alert("Le fichier n'est pas valide."); return; }
+          if (!Array.isArray(imported)) return;
           colisList = imported;
           saveData();
-          renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
-          alert("Sauvegarde importée avec succès.");
-        } catch (err) { alert("Erreur lors de l'importation."); }
+          renderList();
+        } catch(err) { alert("Erreur import"); }
       };
       reader.readAsText(file);
     }
@@ -449,25 +412,18 @@
 
     function downloadSavedPdf(index) {
       const c = colisList[index];
-      if (!c || !c.pdfData) { alert("Aucun fichier PDF enregistré pour ce colis."); return; }
-      let pdfData = c.pdfData;
-      if (!pdfData.startsWith("data:application/pdf;base64,")) pdfData = "data:application/pdf;base64," + pdfData;
+      if (!c || !c.pdfData) return;
       const a = document.createElement("a");
-      a.href = pdfData;
-      a.download = (c.noColis ? `colis_${c.noColis}` : "colis") + ".pdf";
-      document.body.appendChild(a);
+      a.href = c.pdfData;
+      a.download = `colis_${c.noColis || 'sans_nom'}.pdf`;
       a.click();
-      document.body.removeChild(a);
     }
 
     function openSavedPdf(index) {
       const c = colisList[index];
-      if (!c || !c.pdfData) { alert("Aucun fichier PDF enregistré pour ce colis."); return; }
-      let pdfData = c.pdfData;
-      if (!pdfData.startsWith("data:application/pdf;base64,")) pdfData = "data:application/pdf;base64," + pdfData;
+      if (!c || !c.pdfData) return;
       const w = window.open("");
-      if (w) w.document.write('<iframe src="' + pdfData + '" style="border:0; width:100%; height:100vh;"></iframe>');
-      else alert("Le navigateur a bloqué l'ouverture de l'onglet.");
+      if (w) w.document.write('<iframe src="' + c.pdfData + '" style="border:0; width:100%; height:100vh;"></iframe>');
     }
 
     function renderList(filter = "all", search = "") {
@@ -486,7 +442,7 @@
 
       if (filtered.length === 0) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis trouvé pour la recherche demandée.</td>`;
+        tr.innerHTML = `<td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis trouvé.</td>`;
         tbody.appendChild(tr);
         return;
       }
@@ -495,7 +451,6 @@
         const c = item.c, index = item.index;
         const tr = document.createElement("tr");
         tr.className = "row-hover" + (index === selectedIndex ? " row-selected" : "");
-        tr.style.cursor = "pointer";
         tr.addEventListener("click", function(e) {
           if (e.target.tagName === "BUTTON") return;
           selectedIndex = index;
@@ -506,9 +461,9 @@
 
         tr.innerHTML = `
           <td>${renderNoColis(c.noColis)}</td>
-          <td style="max-width:100px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.client)}">${normalize(c.client)}</td>
-          <td style="max-width:60px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.villeOrigine)}">${renderVilleOrigine(c.villeOrigine)}</td>
-          <td style="max-width:60px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.villeDestination)}">${renderVilleDestination(c.villeDestination)}</td>
+          <td title="${normalize(c.client)}">${normalize(c.client)}</td>
+          <td>${renderVilleOrigine(c.villeOrigine)}</td>
+          <td>${renderVilleDestination(c.villeDestination)}</td>
           <td>${c.dateArrivee || ""}</td>
           <td>${c.heureArrivee || ""}</td>
           <td>${c.dateLivraison || ""}</td>
@@ -524,9 +479,7 @@
             <button type="button" onclick="event.stopPropagation(); editColis(${index})">Modifier</button>
             <button type="button" onclick="event.stopPropagation(); deleteColis(${index})">Supprimer</button>
             <button type="button" onclick="event.stopPropagation(); showReceipt(${index})">Reçu</button>
-            <button type="button" onclick="event.stopPropagation(); printReceipt(${index})">Imprimer reçu</button>
-            ${c.pdfData ? `<button type="button" onclick="event.stopPropagation(); downloadSavedPdf(${index})">Télécharger PDF</button>` : ""}
-            ${c.pdfData ? `<button type="button" onclick="event.stopPropagation(); openSavedPdf(${index})">Ouvrir PDF</button>` : ""}
+            <button type="button" onclick="event.stopPropagation(); printReceipt(${index})">Imprimer</button>
           </td>`;
         tbody.appendChild(tr);
       });
@@ -559,8 +512,6 @@
       document.getElementById("vehiculeArrivee").value = c.vehiculeArrivee || "";
       document.getElementById("statutLivraison").value = c.statutLivraison || "Reçu";
       document.getElementById("remarque").value = c.remarque || "";
-      document.getElementById("pdfFile").value = "";
-      document.getElementById("formColumn").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function editColis(index) {
@@ -570,6 +521,7 @@
       fillForm(index);
     }
 
+    // === RE-CONSTRUCTION ET CORRECTION COMPLÈTE DE SUPABASE ===
     async function saveToSupabase(localColis) {
       const payload = {
         id: localColis.id || undefined,
@@ -600,14 +552,20 @@
         vehicule_arrivee: localColis.vehiculeArrivee ?? ""
       };
 
-      if (localColis.id) {
-        const { data, error } = await sb.from("colis").update(payload).eq("id", localColis.id).select().single();
-        if (error) { console.error(error); alert("Erreur Supabase: " + error.message); return null; }
-        return data;
-      } else {
-        const { data, error } = await sb.from("colis").insert(payload).select().single();
-        if (error) { console.error(error); alert("Erreur Supabase: " + error.message); return null; }
-        return data;
+      try {
+        if (localColis.id) {
+          const { data, error } = await sb.from("colis").update(payload).eq("id", localColis.id).select().single();
+          if (error) throw error;
+          return data;
+        } else {
+          const { data, error } = await sb.from("colis").insert(payload).select().single();
+          if (error) throw error;
+          return data;
+        }
+      } catch (err) {
+        console.error("Erreur Supabase lors de l'enregistrement :", err);
+        alert("Erreur Supabase: " + err.message);
+        return null;
       }
     }
 
@@ -738,25 +696,13 @@
     function exportTableauPDF() {
       const tableWrapper = document.querySelector(".table-wrapper");
       if (!tableWrapper) { alert("Tableau non trouvé."); return; }
-      const ths = document.querySelectorAll("thead th");
-      const tds = document.querySelectorAll("tbody td");
-      let hiddenActionsIndex = -1;
-      for (let i = 0; i < ths.length; i++) if (ths[i].textContent.trim() === "AC") { hiddenActionsIndex = i; ths[i].style.display = "none"; }
-      if (hiddenActionsIndex >= 0) tds.forEach(td => { if (td.cellIndex === hiddenActionsIndex) td.style.display = "none"; });
-
       html2canvas(tableWrapper, { scale: 1 }).then(canvas => {
-        if (hiddenActionsIndex >= 0) {
-          tds.forEach(td => { if (td.cellIndex === hiddenActionsIndex) td.style.display = ""; });
-          ths[hiddenActionsIndex].style.display = "";
-        }
         const imgData = canvas.toDataURL("image/png");
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF("l", "mm", "a4");
-        const imgWidth = 280;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 10, 10, 280, (canvas.height * 280) / canvas.width);
         pdf.save("Tableau_Livraisons.pdf");
-      }).catch(err => { console.error(err); alert("Une erreur est survenue lors de la génération du PDF."); });
+      });
     }
   </script>
 </body>
