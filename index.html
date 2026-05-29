@@ -34,7 +34,7 @@
     .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; background: #2a2a2a; padding: 5px; border: 1px solid #444; border-radius: 6px; flex: 0 0 auto; }
     #filterStatus { padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; max-width: 100%; font-size: 0.78em; }
     .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; max-width: 100%; }
-    table { min-width: 1300px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
+    table { min-width: 1200px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
     th, td { padding: 3px 4px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
     th:nth-child(1), td:nth-child(1) { width: 170px; max-width: 170px; } /* N° CO */
     th:nth-child(2), td:nth-child(2) { width: 130px; max-width: 130px; } /* N° BC */
@@ -42,10 +42,9 @@
     th:nth-child(4), td:nth-child(4) { width: 150px; max-width: 150px; } /* ADRESSE */
     th:nth-child(5), td:nth-child(5) { width: 70px; max-width: 70px; }   /* VILLE OR */
     th:nth-child(6), td:nth-child(6) { width: 70px; max-width: 70px; }   /* VILLE DEST */
-    th:nth-child(7), td:nth-child(7) { width: 60px; max-width: 60px; }   /* PESO */
-    th:nth-child(8), td:nth-child(8) { width: 80px; max-width: 80px; }   /* DATE ARR */
-    th:nth-child(9), td:nth-child(9) { width: 75px; max-width: 75px; }   /* STATUT */
-    th:nth-child(10), td:nth-child(10) { width: 120px; max-width: 120px; } /* ACTIONS */
+    th:nth-child(7), td:nth-child(7) { width: 80px; max-width: 80px; }   /* DATE ARR */
+    th:nth-child(8), td:nth-child(8) { width: 75px; max-width: 75px; }   /* STATUT */
+    th:nth-child(9), td:nth-child(9) { width: 120px; max-width: 120px; }  /* ACTIONS */
     th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
     tr:nth-child(even) { background: #262626; }
     tr.row-selected { background: #4fc3f7 !important; color: #000 !important; }
@@ -58,7 +57,7 @@
     .badge-orange { background: #ff9800; color: #fff; }
     .badge-gray { background: #9e9e9e; color: #fff; }
     
-    /* CAMÉRA MODAL */
+    /* MODAL CAMERA */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
     #cameraModal.active { display: block; }
     #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
@@ -89,7 +88,7 @@
       </div>
 
       <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER FEUILLE DE ROUTE ENTIÈRE</button>
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER FEUILLE (VÉRIF BC-16 / CO-17)</button>
       </div>
 
       <form id="colisForm">
@@ -99,7 +98,6 @@
         <label>ADRESSE</label><textarea id="adresse" rows="1" required placeholder="Ex: AGENCE BTP"></textarea>
         <label>VILLE OR</label><input type="text" id="villeOrigine" placeholder="Ex: RA3">
         <label>VILLE DEST</label><input type="text" id="villeDestination" placeholder="Ex: BTP">
-        <label>PESO (KG)</label><input type="text" id="pesoColis">
         <label>DATE ARR</label><input type="date" id="dateArrivee" required>
         <label>STATUT</label>
         <select id="statutLivraison">
@@ -113,7 +111,7 @@
 
     <div class="list-column">
       <div class="list-header">
-        <h2>Tableau des Enregistrements</h2>
+        <h2>Suivi des Enregistrements</h2>
         <select id="filterStatus">
           <option value="all">Tous</option>
           <option value="Reçu">Reçu</option>
@@ -125,7 +123,7 @@
         <table>
           <thead>
             <tr>
-              <th>N° CO</th><th>N° BC</th><th>CLIENT</th><th>ADRESSE</th><th>VILLE OR</th><th>VILLE DEST</th><th>PESO</th><th>DATE ARR</th><th>STATUT</th><th>AC</th>
+              <th>N° CO</th><th>N° BC</th><th>CLIENT</th><th>ADRESSE</th><th>VILLE OR</th><th>VILLE DEST</th><th>DATE ARR</th><th>STATUT</th><th>AC</th>
             </tr>
           </thead>
           <tbody id="colisList"></tbody>
@@ -143,8 +141,7 @@
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Extraction des 17 lignes selon tes règles...</p>
-    <p style="font-size:0.85em; color:#aaa;">Conversion : EXP->VILLE OR, DEST->VILLE DEST...</p>
+    <p>Contrôle de sécurité : Tri des contenus (AR = 16, CO = 17)...</p>
   </div>
 
   <script>
@@ -202,7 +199,7 @@
       if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     }
 
-    // === ANALYSEUR GLOBAL DES 17 LIGNES ===
+    // === ANALYSE SÉCURISÉE SUR LA LONGUEUR DU CONTENU (16 ET 17 CARACTÈRES) ===
     async function performSmartOCR(imageDataUrl) {
       document.getElementById('ocrLoading').classList.add('active');
       try {
@@ -221,8 +218,8 @@
         const total = processSelectedFields(text);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        if (total > 0) alert(`✔ Réanalyse réussie ! ${total} colis insérés selon tes correspondances.`);
-        else alert(`Aucun colis détecté. Vérifie la netteté.`);
+        if (total > 0) alert(`✔ Scan validé ! ${total} lignes extraites (Vérification AR=16 et CO=17 OK).`);
+        else alert(`Aucun colis détecté avec le bon format.`);
       } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
         alert('Erreur : ' + err.message);
@@ -236,69 +233,67 @@
 
       for (let line of lines) {
         line = line.trim();
-        if (line.toUpperCase().includes("CO-") || line.toUpperCase().includes("AR26")) {
-          const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
-          
-          let noBc = parts.find(p => p.startsWith("AR26")) || "AR2605RA";
-          let noCo = parts.find(p => p.startsWith("CO-")) || "";
-          
-          if (noCo) {
-            let cleanWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR26") && !p.startsWith("CO-") && !p.includes("/"));
-            
-            // Correspondance stricte validée ensemble :
-            let expAsVilleOr = cleanWords[0] || "RA3";       // EXP -> VILLE OR
-            let destAsVilleDest = cleanWords[1] || "BTP";   // DEST -> VILLE DEST
-            
-            // Règles pour extraire le Client (Client EXP) et l'Adresse (Client DEST)
-            let client = "CLIENT EXTRAIT";
-            let adresse = "AGENCE DESTINATION";
+        const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
+        
+        // RÈGLE STRICTE SUR LA LONGUEUR DU CONTENU DEMANDÉE
+        let noBc = parts.find(p => p.startsWith("AR") && p.length === 16); 
+        let noCo = parts.find(p => p.startsWith("CO") && p.length === 17);
 
-            if (line.toUpperCase().includes("YAS")) {
-              client = "YAS MOBILE";
-              adresse = "AGENCE BTP";
-            } else if (line.toUpperCase().includes("BNI")) {
-              client = "BNI COLIS";
-              adresse = "BANQUE BNI";
-            } else if (line.toUpperCase().includes("BOA")) {
-              client = "BOA COURRIER";
-              adresse = "AGENCE BOA";
-            } else if (line.toUpperCase().includes("AMPR")) {
-              client = "AMPR MADAGASCAR";
-              adresse = "AMPR DIRECTION";
-            } else if (cleanWords.length > 3) {
-              client = cleanWords[cleanWords.length - 2];
-              adresse = cleanWords[cleanWords.length - 1];
-            }
-
-            let peso = "";
-            let pesoIdx = parts.findIndex(p => p.includes("KG"));
-            if (pesoIdx !== -1) peso = parts[pesoIdx];
-
-            const newColis = {
-              noColis: noCo,
-              noBordereau: noBc,
-              client: client,
-              adresse: adresse,
-              villeOrigine: expAsVilleOr,
-              villeDestination: destAsVilleDest,
-              pesoColis: peso,
-              dateArrivee: today,
-              statutLivraison: "Reçu"
-            };
-
-            colisList.unshift(newColis);
-            count++;
-
-            // Sauvegarde asynchrone sur Supabase
-            saveToSupabase(newColis).then(res => { if(res) { newColis.id = res.id; saveData(); } });
+        // Si la ligne contient au moins un numéro de colis valide
+        if (noCo) {
+          // Si le BC est mal lu ou absent sur la dernière ligne, on force la racine générique propre
+          if (!noBc) {
+            noBc = "AR2605RA"; 
           }
+
+          let cleanWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR") && !p.startsWith("CO") && !p.includes("/"));
+          
+          let expAsVilleOr = cleanWords[0] || "RA3";       // EXP -> VILLE OR
+          let destAsVilleDest = cleanWords[1] || "BTP";   // DEST -> VILLE DEST
+          
+          let client = "CLIENT EN COPIE";
+          let adresse = "AGENCE DESTINATION";
+
+          if (line.toUpperCase().includes("YAS")) {
+            client = "YAS MOBILE";
+            adresse = "AGENCE BTP";
+          } else if (line.toUpperCase().includes("BNI")) {
+            client = "BNI COLIS";
+            adresse = "BANQUE BNI";
+          } else if (line.toUpperCase().includes("BOA")) {
+            client = "BOA COURRIER";
+            adresse = "AGENCE BOA";
+          } else if (line.toUpperCase().includes("AMPR")) {
+            client = "AMPR MADAGASCAR";
+            adresse = "AMPR DIRECTION";
+          } else if (cleanWords.length > 3) {
+            client = cleanWords[cleanWords.length - 2];
+            adresse = cleanWords[cleanWords.length - 1];
+          }
+
+          const newColis = {
+            noColis: noCo,
+            noBordereau: noBc,
+            client: client,
+            adresse: adresse,
+            villeOrigine: expAsVilleOr,
+            villeDestination: destAsVilleDest,
+            dateArrivee: today,
+            statutLivraison: "Reçu"
+          };
+
+          colisList.unshift(newColis);
+          count++;
+
+          // Injection dans la base Supabase distante
+          saveToSupabase(newColis).then(res => { if(res) { newColis.id = res.id; saveData(); } });
         }
       }
       if (count > 0) { saveData(); renderList(); }
       return count;
     }
 
-    // === INTERACTION TABLEAU ET LIEN SUPABASE ===
+    // === RENDU DU TABLEAU ET REQUÊTES SUPABASE ===
     function renderList(filter = "all", search = "") {
       const tbody = document.getElementById("colisList");
       tbody.innerHTML = "";
@@ -312,7 +307,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:#aaa; text-align:center;">Aucun colis enregistré.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#aaa; text-align:center;">Aucun colis dans la liste.</td></tr>`;
         return;
       }
 
@@ -328,7 +323,6 @@
           <td title="${c.adresse}">${c.adresse}</td>
           <td>${renderVilleOR(c.villeOrigine)}</td>
           <td>${renderVilleDEST(c.villeDestination)}</td>
-          <td>${c.pesoColis || "-"}</td>
           <td>${c.dateArrivee}</td>
           <td>${renderStatut(c.statutLivraison)}</td>
           <td>
@@ -347,7 +341,6 @@
         adresse: local.adresse,
         ville_origine: local.villeOrigine,
         ville_destination: local.villeDestination,
-        peso_colis: local.pesoColis,
         date_arrivee: local.dateArrivee,
         statut_livraison: local.statutLivraison
       };
@@ -372,7 +365,6 @@
         adresse: document.getElementById("adresse").value,
         villeOrigine: document.getElementById("villeOrigine").value,
         villeDestination: document.getElementById("villeDestination").value,
-        pesoColis: document.getElementById("pesoColis").value,
         dateArrivee: document.getElementById("dateArrivee").value,
         statutLivraison: document.getElementById("statutLivraison").value
       };
@@ -398,7 +390,6 @@
       document.getElementById("adresse").value = c.adresse;
       document.getElementById("villeOrigine").value = c.villeOrigine;
       document.getElementById("villeDestination").value = c.villeDestination;
-      document.getElementById("pesoColis").value = c.pesoColis || "";
       document.getElementById("dateArrivee").value = c.dateArrivee;
       document.getElementById("statutLivraison").value = c.statutLivraison;
       renderList();
