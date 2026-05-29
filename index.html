@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOMENA SERVICE - GESTION COMPLÈTE</title>
+  <title>NOMENA SERVICE - SCAN ALIGNÉ</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
@@ -28,46 +28,26 @@
     .form-group { display: flex; align-items: center; margin-bottom: 3px; }
     label { width: 90px; min-width: 90px; font-size: 0.65em; text-transform: uppercase; color: #ccc; font-weight: bold; }
     input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { flex: 1; padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.75em; min-width: 0; }
-    textarea { height: 24px; resize: none; }
     
     .checkbox-group { display: flex; align-items: center; gap: 8px; margin: 6px 0; background: #333; padding: 4px; border-radius: 4px; }
     .checkbox-group label { width: auto; min-width: auto; color: #fff; font-size: 0.75em; cursor: pointer; }
-    .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     
-    button[type="submit"] { width: 100%; padding: 6px; background: #2e7d32; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; font-weight: bold; margin-top: 8px; }
-    button[type="submit"]:hover { background: #4caf50; }
+    .form-buttons { display: flex; gap: 4px; margin-top: 8px; }
+    button[type="submit"] { flex: 2; padding: 8px; background: #2e7d32; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; font-weight: bold; }
+    .btn-clear { flex: 1; padding: 8px; background: #757575; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; }
     
     .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; }
     table { min-width: 1600px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.72em; }
     th, td { padding: 4px 5px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
     
-    /* Dimensions des colonnes ajustées aux nouveaux champs */
-    th:nth-child(1), td:nth-child(1) { width: 140px; } /* N° BC */
-    th:nth-child(2), td:nth-child(2) { width: 150px; } /* N° CO */
-    th:nth-child(3), td:nth-child(3) { width: 50px; }  /* EXP */
-    th:nth-child(4), td:nth-child(4) { width: 50px; }  /* DEST */
-    th:nth-child(5), td:nth-child(5) { width: 110px; } /* CLIENT EXP */
-    th:nth-child(6), td:nth-child(6) { width: 110px; } /* CLIENT DEST */
-    th:nth-child(7), td:nth-child(7) { width: 80px; }  /* DATE ARR */
-    th:nth-child(8), td:nth-child(8) { width: 90px; }  /* CHAUFFEUR */
-    th:nth-child(9), td:nth-child(9) { width: 80px; }  /* VEHICULE */
-    th:nth-child(10), td:nth-child(10) { width: 65px; } /* LIVRÉ */
-    th:nth-child(11), td:nth-child(11) { width: 90px; } /* LIVREUR */
-    th:nth-child(12), td:nth-child(12) { width: 110px; }/* DATE/H LIV */
-    th:nth-child(13), td:nth-child(13) { width: 80px; }  /* MONTANT */
-    th:nth-child(14), td:nth-child(14) { width: 90px; }  /* MODE PAIEMENT */
-    th:nth-child(15), td:nth-child(15) { width: 110px; } /* ACTIONS */
-    
     th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
     tr:nth-child(even) { background: #262626; }
-    tr.row-selected { background: #004d40 !important; }
-    
     .status-badge { display: inline-block; padding: 2px 4px; border-radius: 3px; font-weight: bold; font-size: 0.85em; text-align: center; width: 100%; }
     .status-oui { background: #2e7d32; color: white; }
     .status-non { background: #c62828; color: white; }
     .code-highlight { color: #4fc3f7; font-weight: bold; }
     
-    /* CAMERA */
+    /* CAMERA MODAL */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
     #cameraModal.active { display: block; }
     #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
@@ -78,17 +58,7 @@
     .ocr-loading.active { display: block; }
     .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* ZONE TICKET IMPRESSION hidden sur écran */
     #printSection { display: none; }
-    @media print {
-      body * { display: none; }
-      #printSection { display: block; position: absolute; top: 0; left: 0; width: 80mm; color: #000; background: #fff; font-family: monospace; padding: 5mm; font-size: 11pt; }
-      .ticket-title { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 4mm; border-bottom: 2px dashed #000; padding-bottom: 2mm; }
-      .ticket-row { display: flex; justify-content: space-between; margin-bottom: 1.5mm; text-transform: uppercase; }
-      .ticket-divider { border-top: 1px dashed #000; margin: 3mm 0; }
-      .ticket-footer { text-align: center; font-size: 9pt; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; }
-    }
   </style>
 </head>
 <body>
@@ -103,40 +73,43 @@
       <form id="colisForm">
         <input type="hidden" id="editIndex" value="-1">
         
-        <div class="section-title">En provenance de la feuille</div>
-        <div class="form-group"><label>N° BC (AR)</label><input type="text" id="noBordereau" required placeholder="AR..."></div>
-        <div class="form-group"><label>N° COLIS (CO)</label><input type="text" id="noColis" required placeholder="CO-..."></div>
-        <div class="form-group"><label>EXP (Départ)</label><input type="text" id="exp" placeholder="Ex: RA3"></div>
-        <div class="form-group"><label>DEST (Arrivée)</label><input type="text" id="dest" placeholder="Ex: BTP"></div>
-        <div class="form-group"><label>CLIENT EXP</label><input type="text" id="clientExp" placeholder="Nom expéditeur"></div>
-        <div class="form-group"><label>CLIENT DEST</label><input type="text" id="clientDest" placeholder="Nom destinataire"></div>
+        <div class="section-title">Données Colis</div>
+        <div class="form-group"><label>N° BC (AR)</label><input type="text" id="noBordereau" required></div>
+        <div class="form-group"><label>N° COLIS (CO)</label><input type="text" id="noColis" required></div>
+        <div class="form-group"><label>EXP (Départ)</label><input type="text" id="exp"></div>
+        <div class="form-group"><label>DEST (Arrivée)</label><input type="text" id="dest"></div>
+        <div class="form-group"><label>CLIENT EXP</label><input type="text" id="clientExp"></div>
+        <div class="form-group"><label>CLIENT DEST</label><input type="text" id="clientDest"></div>
         <div class="form-group"><label>DATE ARRIVÉE</label><input type="date" id="dateArrivee" required></div>
         
-        <div class="section-title">Le Camion d'Arrivée</div>
-        <div class="form-group"><label>CHAUFFEUR</label><input type="text" id="chauffeur" placeholder="Nom du chauffeur convoyeur"></div>
-        <div class="form-group"><label>VÉHICULE</label><input type="text" id="vehicule" placeholder="Immatriculation / Camion"></div>
+        <div class="section-title">Le Camion</div>
+        <div class="form-group"><label>CHAUFFEUR</label><input type="text" id="chauffeur"></div>
+        <div class="form-group"><label>VÉHICULE</label><input type="text" id="vehicule"></div>
         
-        <div class="section-title">Livraison Finale & Caisse</div>
+        <div class="section-title">Livraison Finalisée</div>
         <div class="checkbox-group">
           <input type="checkbox" id="isLivre" onchange="toggleLivraisonFields()">
           <label for="isLivre">COLIS LIVRÉ AU CLIENT</label>
         </div>
         
         <div id="livraisonFormFields" style="display: none;">
-          <div class="form-group"><label>MON LIVREUR</label><input type="text" id="monLivreur" placeholder="Nom de ton livreur"></div>
+          <div class="form-group"><label>MON LIVREUR</label><input type="text" id="monLivreur"></div>
           <div class="form-group"><label>DATE LIVRÉ</label><input type="date" id="dateLivraison"></div>
           <div class="form-group"><label>HEURE LIVRÉ</label><input type="time" id="heureLivraison"></div>
-          <div class="form-group"><label>MONTANT</label><input type="number" id="montant" placeholder="Montant encaissé"></div>
-          <div class="form-group"><label>MODE PAIEMENT</label><input type="text" id="modePaiement" placeholder="Libre (Chèque, Mobile, Banque...)"></div>
+          <div class="form-group"><label>MONTANT</label><input type="number" id="montant"></div>
+          <div class="form-group"><label>MODE PAIEMENT</label><input type="text" id="modePaiement"></div>
         </div>
         
-        <button type="submit">Enregistrer les données</button>
+        <div class="form-buttons">
+          <button type="submit">Enregistrer</button>
+          <button type="button" class="btn-clear" onclick="clearFormManual()">Vider</button>
+        </div>
       </form>
     </div>
 
     <div class="list-column">
       <div class="search-zone">
-        <input type="text" id="searchInput" placeholder="Recherche rapide (N° CO, BC, Client, Chauffeur...)">
+        <input type="text" id="searchInput" placeholder="Recherche rapide...">
       </div>
       <div class="table-wrapper">
         <table>
@@ -154,13 +127,13 @@
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE</button>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 SÉCURISER ET IMPORTER LES CODES</button>
     <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Extraction intelligente des codes AR et CO...</p>
+    <p>Analyse des lignes physiques du document...</p>
   </div>
 
   <div id="printSection"></div>
@@ -171,34 +144,25 @@
     const { createClient } = supabase;
     const sb = createClient(supabaseUrl, supabaseKey);
 
+    // ACTIVATION DU MOTEUR D'ALIGNED ET RETOUR COMPLET DES COORDONNÉES EN PIXELS (isOverlay=true)
     const OCRSPACE_API_KEY = "helloworld"; 
 
-    // Changement de clé pour éviter les conflits d'anciennes structures
-    let colisList = JSON.parse(localStorage.getItem("colis_feuille_v4")) || [];
+    let colisList = JSON.parse(localStorage.getItem("colis_aligned_v6")) || [];
     let videoStream = null;
 
-    function saveData() { localStorage.setItem("colis_feuille_v4", JSON.stringify(colisList)); }
+    function saveData() { localStorage.setItem("colis_aligned_v6", JSON.stringify(colisList)); }
 
     function toggleLivraisonFields() {
       const checked = document.getElementById("isLivre").checked;
       document.getElementById("livraisonFormFields").style.display = checked ? "block" : "none";
-      if(checked) {
-        if(!document.getElementById("dateLivraison").value) document.getElementById("dateLivraison").value = new Date().toISOString().slice(0,10);
-        if(!document.getElementById("heureLivraison").value) {
-          const now = new Date();
-          document.getElementById("heureLivraison").value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        }
-      }
     }
 
     function openCamera() {
       document.getElementById('cameraModal').classList.add('active');
       navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
-      }).then(stream => {
-        videoStream = stream;
-        document.getElementById('cameraVideo').srcObject = stream;
-      }).catch(err => { alert('Erreur caméra: ' + err.message); closeCamera(); });
+      }).then(stream => { videoStream = stream; document.getElementById('cameraVideo').srcObject = stream; })
+        .catch(err => { alert('Erreur caméra: ' + err.message); closeCamera(); });
     }
 
     function capturePhoto() {
@@ -225,88 +189,95 @@
         formData.append('base64Image', base64Data);
         formData.append('apikey', OCRSPACE_API_KEY);
         formData.append('language', 'fre');
+        formData.append('isOverlayRequired', 'true'); // OBLIGATOIRE POUR OBTENIR LES COORDONNÉES DES LIGNES
         formData.append('OCREngine', '2');
 
         const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
         const json = await res.json();
 
-        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Feuille non détectée ou floue.");
+        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Feuille illisible.");
 
-        const fullText = json.ParsedResults[0].ParsedText;
-        const count = extractFeuilleData(fullText);
+        const count = processAlignedOCR(json.ParsedResults[0]);
 
         document.getElementById('ocrLoading').classList.remove('active');
-        if (count > 0) alert(`✔ Réussi ! ${count} colis importés depuis la feuille.`);
-        else alert("Aucun code CO- ou AR valide trouvé sur la photo.");
+        if (count > 0) alert(`✔ Réussi ! ${count} lignes importées sans décalage.`);
+        else alert("Aucune ligne valide contenant à la fois CO et AR n'a été détectée.");
       } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
-        alert("Erreur de lecture : " + err.message);
+        alert("Erreur analyse : " + err.message);
       }
     }
 
-    // EXTRACTION ADAPTÉE À LA FEUILLE DE ROUTE
-    function extractFeuilleData(text) {
-      const words = text.split(/[\s,;\n\r]+/).map(w => w.trim().toUpperCase());
+    // ALGORITHME DE CORRÉLATION PAR LIGNE RECONSTRUITE
+    function processAlignedOCR(parsedResult) {
+      if (!parsedResult.TextOverlay || !parsedResult.TextOverlay.Lines) return 0;
       
-      let listCO = words.filter(w => w.includes("CO") && w.length >= 8);
-      let listAR = words.filter(w => w.includes("AR") && w.length >= 8);
-
-      let inserted = 0;
+      const linesData = parsedResult.TextOverlay.Lines;
+      let detectedPairs = [];
       const today = new Date().toISOString().slice(0, 10);
 
-      // On récupère le chauffeur et véhicule saisis actuellement pour les dupliquer
-      const currentChauffeur = document.getElementById("chauffeur").value.trim().toUpperCase();
-      const currentVehicule = document.getElementById("vehicule").value.trim().toUpperCase();
-      const currentExp = document.getElementById("exp").value.trim().toUpperCase() || "RA3";
-      const currentDest = document.getElementById("dest").value.trim().toUpperCase() || "BTP";
+      // Étape 1 : Isoler tous les mots typés avec leur hauteur (Top) exacte
+      let rawTokens = [];
+      linesData.forEach(line => {
+        line.Words.forEach(w => {
+          const text = w.WordText.toUpperCase().trim();
+          if ((text.includes("CO") || text.includes("AR")) && text.length >= 8) {
+            rawTokens.push({ text: text, top: w.Top, height: w.Height });
+          }
+        });
+      });
 
-      listCO.forEach((coCode, index) => {
-        let bcCode = listAR[index] || "AR2605RA"; // Sécurité racine si manque de correspondance
+      // Étape 2 : Regrouper les tokens qui partagent la même marge de hauteur (Ligne physique)
+      let usedIndexes = new Set();
+      
+      for (let i = 0; i < rawTokens.length; i++) {
+        if (usedIndexes.has(i)) continue;
+        let t1 = rawTokens[i];
 
+        // Chercher un partenaire sur la même ligne (marge d'erreur de 15 pixels de hauteur)
+        for (let j = i + 1; j < rawTokens.length; j++) {
+          if (usedIndexes.has(j)) continue;
+          let t2 = rawTokens[j];
+
+          if (Math.abs(t1.top - t2.top) <= 18) {
+            let coCode = t1.text.includes("CO") ? t1.text : (t2.text.includes("CO") ? t2.text : null);
+            let arCode = t1.text.includes("AR") ? t1.text : (t2.text.includes("AR") ? t2.text : null);
+
+            if (coCode && arCode) {
+              detectedPairs.push({ co: coCode, ar: arCode });
+              usedIndexes.add(i);
+              usedIndexes.add(j);
+              break;
+            }
+          }
+        }
+      }
+
+      // Étape 3 : Injecter les couples validés et synchroniser Supabase
+      let count = 0;
+      detectedPairs.forEach(pair => {
         const item = {
-          noBordereau: bcCode,
-          noColis: coCode,
-          exp: currentExp,
-          dest: currentDest,
-          clientExp: document.getElementById("clientExp").value.trim().toUpperCase() || "",
-          clientDest: document.getElementById("clientDest").value.trim().toUpperCase() || "",
-          dateArrivee: document.getElementById("dateArrivee").value || today,
-          chauffeur: currentChauffeur,
-          vehicule: currentVehicule,
-          isLivre: false,
-          monLivreur: "",
-          dateLivraison: "",
-          heureLivraison: "",
-          montant: "",
-          modePaiement: ""
+          noBordereau: pair.ar,
+          noColis: pair.co,
+          exp: "", clientExp: "", dest: "", clientDest: "", dateArrivee: today, chauffeur: "", vehicule: "",
+          isLivre: false, monLivreur: "", dateLivraison: "", heureLivraison: "", montant: "", modePaiement: ""
         };
-
         colisList.unshift(item);
-        inserted++;
-
+        count++;
         syncWithSupabase(item).then(saved => { if (saved) { item.id = saved.id; saveData(); } });
       });
 
-      if (inserted > 0) { saveData(); renderList(); }
-      return inserted;
+      if (count > 0) { saveData(); renderList(); }
+      return count;
     }
 
     async function syncWithSupabase(item) {
       const payload = {
-        no_bordereau: item.noBordereau,
-        no_colis: item.noColis,
-        exp: item.exp,
-        dest: item.dest,
-        client_exp: item.clientExp,
-        client_dest: item.clientDest,
-        date_arrivee: item.dateArrivee,
-        chauffeur: item.chauffeur,
-        vehicule: item.vehicule,
-        is_livre: item.isLivre,
-        mon_livreur: item.monLivreur,
-        date_livraison: item.dateLivraison || null,
-        heure_livraison: item.heureLivraison || null,
-        montant: item.montant ? parseFloat(item.montant) : null,
+        no_bordereau: item.noBordereau, no_colis: item.noColis, exp: item.exp, dest: item.dest,
+        client_exp: item.clientExp, client_dest: item.clientDest, date_arrivee: item.dateArrivee,
+        chauffeur: item.chauffeur, vehicule: item.vehicule, is_livre: item.isLivre,
+        mon_livreur: item.monLivreur, date_livraison: item.dateLivraison || null,
+        heure_livraison: item.heureLivraison || null, montant: item.montant ? parseFloat(item.montant) : null,
         mode_paiement: item.modePaiement
       };
       try {
@@ -317,61 +288,38 @@
           const { data, error } = await sb.from("colis").insert(payload).select().single();
           if (error) throw error; return data;
         }
-      } catch (e) { console.error("Erreur Supabase:", e); return null; }
+      } catch (e) { console.error(e); return null; }
     }
 
     function renderList(search = "") {
-      const tbody = document.getElementById("colisList");
-      tbody.innerHTML = "";
+      const tbody = document.getElementById("colisList"); tbody.innerHTML = "";
       const s = search.toLowerCase().trim();
-
-      const filtered = colisList.filter(c => {
-        if (!s) return true;
-        return c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s) || 
-               (c.clientDest && c.clientDest.toLowerCase().includes(s)) || (c.chauffeur && c.chauffeur.toLowerCase().includes(s));
-      });
+      const filtered = colisList.filter(c => !s || c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s));
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:#aaa;">Aucun colis dans la base.</td></tr>`;
-        return;
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:#aaa;">Aucun colis.</td></tr>`; return;
       }
-
       filtered.forEach((c, index) => {
         const tr = document.createElement("tr");
-        
         const badgeLivre = c.isLivre ? `<span class="status-badge status-oui">OUI</span>` : `<span class="status-badge status-non">NON</span>`;
-        const dateHeureLiv = c.isLivre ? `${c.dateLivraison} ${c.heureLivraison}` : "-";
-
         tr.innerHTML = `
-          <td>${c.noBordereau}</td>
-          <td><span class="code-highlight">${c.noColis}</span></td>
-          <td>${c.exp || "-"}</td>
-          <td>${c.dest || "-"}</td>
-          <td>${c.clientExp || "-"}</td>
-          <td>${c.clientDest || "-"}</td>
-          <td>${c.dateArrivee}</td>
-          <td>${c.chauffeur || "-"}</td>
-          <td>${c.vehicule || "-"}</td>
-          <td>${badgeLivre}</td>
-          <td>${c.monLivreur || "-"}</td>
-          <td>${dateHeureLiv}</td>
-          <td>${c.montant ? c.montant + ' Ar' : "-"}</td>
-          <td>${c.modePaiement || "-"}</td>
+          <td>${c.noBordereau}</td><td><span class="code-highlight">${c.noColis}</span></td>
+          <td>${c.exp || "-"}</td><td>${c.dest || "-"}</td><td>${c.clientExp || "-"}</td><td>${c.clientDest || "-"}</td>
+          <td>${c.dateArrivee}</td><td>${c.chauffeur || "-"}</td><td>${c.vehicule || "-"}</td><td>${badgeLivre}</td>
+          <td>${c.monLivreur || "-"}</td><td>${c.isLivre ? c.dateLivraison + ' ' + c.heureLivraison : "-"}</td>
+          <td>${c.montant ? c.montant + ' Ar' : "-"}</td><td>${c.modePaiement || "-"}</td>
           <td>
-            <button onclick="editColis(${index})" style="background:#ef6c00;">Éditer</button>
-            <button onclick="printTicket(${index})" style="background:#0288d1;">Imprimer</button>
-            <button onclick="deleteColis(${index})" style="background:#c62828;">X</button>
+            <button onclick="editColis(${index})" style="background:#ef6c00; color:#fff; border:none; padding:2px 5px; border-radius:3px;">Éditer</button>
+            <button onclick="deleteColis(${index})" style="background:#c62828; color:#fff; border:none; padding:2px 5px; border-radius:3px;">X</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // SOUCOUMISSION DU FORMULAIRE MANUEL AVEC RETENTION DE CONTEXTE CAMION
     document.getElementById("colisForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const idx = parseInt(document.getElementById("editIndex").value);
-      
       const item = {
         id: idx >= 0 ? colisList[idx].id : undefined,
         noBordereau: document.getElementById("noBordereau").value.trim().toUpperCase(),
@@ -391,118 +339,44 @@
         modePaiement: document.getElementById("isLivre").checked ? document.getElementById("modePaiement").value.trim().toUpperCase() : ""
       };
 
-      if (idx >= 0) {
-        colisList[idx] = item;
-      } else {
-        colisList.unshift(item);
-      }
+      if (idx >= 0) colisList[idx] = item; else colisList.unshift(item);
       saveData();
-
       const saved = await syncWithSupabase(item);
       if (saved && idx < 0) colisList[0].id = saved.id;
-      saveData();
-
-      // On réinitialise mais en GARDANT Chauffeur, Véhicule, EXP, DEST et Date Arrivée pour le colis suivant (Gain de temps pro)
-      const savedChauffeur = document.getElementById("chauffeur").value;
-      const savedVehicule = document.getElementById("vehicule").value;
-      const savedExp = document.getElementById("exp").value;
-      const savedDest = document.getElementById("dest").value;
-      const savedDate = document.getElementById("dateArrivee").value;
-
-      this.reset();
-      document.getElementById("editIndex").value = "-1";
-
-      document.getElementById("chauffeur").value = savedChauffeur;
-      document.getElementById("vehicule").value = savedVehicule;
-      document.getElementById("exp").value = savedExp;
-      document.getElementById("dest").value = savedDest;
-      document.getElementById("dateArrivee").value = savedDate;
-
-      toggleLivraisonFields();
-      renderList();
+      saveData(); clearFormManual(); renderList();
     });
 
+    function clearFormManual() {
+      document.getElementById("colisForm").reset();
+      document.getElementById("editIndex").value = "-1";
+      document.getElementById("dateArrivee").value = new Date().toISOString().slice(0, 10);
+      toggleLivraisonFields();
+    }
+
     function editColis(idx) {
-      document.getElementById("editIndex").value = idx;
-      const c = colisList[idx];
-      
+      document.getElementById("editIndex").value = idx; const c = colisList[idx];
       document.getElementById("noBordereau").value = c.noBordereau;
       document.getElementById("noColis").value = c.noColis;
-      document.getElementById("exp").value = c.exp || "";
-      document.getElementById("dest").value = c.dest || "";
-      document.getElementById("clientExp").value = c.clientExp || "";
-      document.getElementById("clientDest").value = c.clientDest || "";
+      document.getElementById("exp").value = c.exp || ""; document.getElementById("dest").value = c.dest || "";
+      document.getElementById("clientExp").value = c.clientExp || ""; document.getElementById("clientDest").value = c.clientDest || "";
       document.getElementById("dateArrivee").value = c.dateArrivee;
-      document.getElementById("chauffeur").value = c.chauffeur || "";
-      document.getElementById("vehicule").value = c.vehicule || "";
-      
-      document.getElementById("isLivre").checked = c.isLivre;
-      toggleLivraisonFields();
-
+      document.getElementById("chauffeur").value = c.chauffeur || ""; document.getElementById("vehicule").value = c.vehicule || "";
+      document.getElementById("isLivre").checked = c.isLivre; toggleLivraisonFields();
       if(c.isLivre) {
-        document.getElementById("monLivreur").value = c.monLivreur || "";
-        document.getElementById("dateLivraison").value = c.dateLivraison || "";
-        document.getElementById("heureLivraison").value = c.heureLivraison || "";
-        document.getElementById("montant").value = c.montant || "";
+        document.getElementById("monLivreur").value = c.monLivreur || ""; document.getElementById("dateLivraison").value = c.dateLivraison || "";
+        document.getElementById("heureLivraison").value = c.heureLivraison || ""; document.getElementById("montant").value = c.montant || "";
         document.getElementById("modePaiement").value = c.modePaiement || "";
       }
-      
-      // Petit scroll pour remonter au formulaire sur mobile
-      document.querySelector('.form-column').scrollTop = 0;
     }
 
     function deleteColis(idx) {
-      if (!confirm("Supprimer définitivement ce colis de l'application ?")) return;
+      if (!confirm("Supprimer ce colis ?")) return;
       if (colisList[idx].id) sb.from("colis").delete().eq("id", colisList[idx].id);
       colisList.splice(idx, 1); saveData(); renderList();
     }
 
-    // LOGIQUE D'IMPRESSION DU REÇU PRO (TICKET COMMERCE)
-    function printTicket(idx) {
-      const c = colisList[idx];
-      const printZone = document.getElementById("printSection");
-      
-      let html = `
-        <div class="ticket-title">NOMENA SERVICE<br><span style="font-size:10pt;">REÇU DE LIVRAISON</span></div>
-        <div class="ticket-row"><span>Date d'Arrivée:</span> <span>${c.dateArrivee}</span></div>
-        <div class="ticket-row"><span>Axe Voyage:</span> <span>${c.exp || '-'} ➔ ${c.dest || '-'}</span></div>
-        <div class="ticket-divider"></div>
-        <div class="ticket-row"><span>N° Bordereau:</span> <span>${c.noBordereau}</span></div>
-        <div class="ticket-row"><span>N° Colis:</span> <span><strong>${c.noColis}</strong></span></div>
-        <div class="ticket-divider"></div>
-        <div class="ticket-row"><span>Expéditeur:</span> <span>${c.clientExp || '-'}</span></div>
-        <div class="ticket-row"><span>Destinataire:</span> <span>${c.clientDest || '-'}</span></div>
-        <div class="ticket-divider"></div>
-        <div class="ticket-row"><span>Statut Final:</span> <span>${c.isLivre ? 'LIVRÉ' : 'À L\'AGENCE'}</span></div>
-      `;
-
-      if(c.isLivre) {
-        html += `
-          <div class="ticket-row"><span>Livreur:</span> <span>${c.monLivreur || '-'}</span></div>
-          <div class="ticket-row"><span>Date Sortie:</span> <span>${c.dateLivraison} à ${c.heureLivraison}</span></div>
-          <div class="ticket-divider"></div>
-          <div class="ticket-row" style="font-size:12pt; font-weight:bold;"><span>Montant Payé:</span> <span>${c.montant ? c.montant + ' Ar' : '0 Ar'}</span></div>
-          <div class="ticket-row"><span>Mode Paiement:</span> <span>${c.modePaiement || '-'}</span></div>
-        `;
-      }
-
-      html += `
-        <div class="ticket-footer">
-          Merci pour votre confiance !<br>
-          NOMENA SERVICE à votre écoute.
-        </div>
-      `;
-
-      printZone.innerHTML = html;
-      window.print();
-    }
-
     document.getElementById("searchInput").addEventListener("input", function() { renderList(this.value); });
-    
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("dateArrivee").value = new Date().toISOString().slice(0, 10);
-      renderList();
-    });
+    window.addEventListener("DOMContentLoaded", () => { clearFormManual(); renderList(); });
   </script>
 </body>
 </html>
