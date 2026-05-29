@@ -88,7 +88,7 @@
       </div>
 
       <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER FEUILLE (VÉRIF BC-16 / CO-17)</button>
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE DE ROUTE</button>
       </div>
 
       <form id="colisForm">
@@ -135,13 +135,14 @@
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE ENTIÈRE</button>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE</button>
     <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Contrôle de sécurité : Tri des contenus (AR = 16, CO = 17)...</p>
+    <p>Lecture intelligente en cours...</p>
+    <p style="font-size:0.8em; color:#aaa;">Détection souple des formats AR et CO...</p>
   </div>
 
   <script>
@@ -179,7 +180,7 @@
       }).then(stream => {
         videoStream = stream;
         document.getElementById('cameraVideo').srcObject = stream;
-      }).catch(err => { alert('Caméra indisponible: ' + err.message); closeCamera(); });
+      }).catch(err => { alert('Caméra inaccessible: ' + err.message); closeCamera(); });
     }
 
     function capturePhoto() {
@@ -199,7 +200,6 @@
       if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     }
 
-    // === ANALYSE SÉCURISÉE SUR LA LONGUEUR DU CONTENU (16 ET 17 CARACTÈRES) ===
     async function performSmartOCR(imageDataUrl) {
       document.getElementById('ocrLoading').classList.add('active');
       try {
@@ -212,20 +212,21 @@
         const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
         const json = await res.json();
         
-        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error('Feuille illisible.');
+        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error('Document non détecté.');
         
         const text = json.ParsedResults[0].ParsedText;
         const total = processSelectedFields(text);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        if (total > 0) alert(`✔ Scan validé ! ${total} lignes extraites (Vérification AR=16 et CO=17 OK).`);
-        else alert(`Aucun colis détecté avec le bon format.`);
+        if (total > 0) alert(`✔ Réussi ! ${total} lignes intégrées.`);
+        else alert(`Aucun colis détecté. Essayez de rapprocher l'appareil ou d'améliorer l'éclairage.`);
       } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('Erreur : ' + err.message);
+        alert('Erreur de lecture : ' + err.message);
       }
     }
 
+    // === ANALYSEUR SOUPLE RE-PARAMÉTRÉ ===
     function processSelectedFields(text) {
       const lines = text.split('\n');
       const today = new Date().toISOString().slice(0, 10);
@@ -235,25 +236,23 @@
         line = line.trim();
         const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
         
-        // RÈGLE STRICTE SUR LA LONGUEUR DU CONTENU DEMANDÉE
-        let noBc = parts.find(p => p.startsWith("AR") && p.length === 16); 
-        let noCo = parts.find(p => p.startsWith("CO") && p.length === 17);
+        // RECHERCHE SOUPLE : On cherche juste si ça contient la racine, peu importe la longueur exacte
+        let noCo = parts.find(p => p.includes("CO") && p.length >= 10);
+        let noBc = parts.find(p => p.includes("AR") && p.length >= 10);
 
-        // Si la ligne contient au moins un numéro de colis valide
         if (noCo) {
-          // Si le BC est mal lu ou absent sur la dernière ligne, on force la racine générique propre
-          if (!noBc) {
-            noBc = "AR2605RA"; 
-          }
+          if (!noBc) noBc = "AR2605RA"; // Sécurité si le BC est mal scanné
 
-          let cleanWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR") && !p.startsWith("CO") && !p.includes("/"));
+          // Extraction des mots pour les villes et clients
+          let cleanWords = parts.filter(p => p.length >= 3 && !p.includes("CO") && !p.includes("AR") && !p.includes("/"));
           
-          let expAsVilleOr = cleanWords[0] || "RA3";       // EXP -> VILLE OR
-          let destAsVilleDest = cleanWords[1] || "BTP";   // DEST -> VILLE DEST
+          let expAsVilleOr = cleanWords[0] || "RA3";
+          let destAsVilleDest = cleanWords[1] || "BTP";
           
-          let client = "CLIENT EN COPIE";
-          let adresse = "AGENCE DESTINATION";
+          let client = "CONTRAT";
+          let adresse = "DISTRIBUTION";
 
+          // Identification automatique des clients fréquents
           if (line.toUpperCase().includes("YAS")) {
             client = "YAS MOBILE";
             adresse = "AGENCE BTP";
@@ -285,7 +284,7 @@
           colisList.unshift(newColis);
           count++;
 
-          // Injection dans la base Supabase distante
+          // Envoi direct vers Supabase
           saveToSupabase(newColis).then(res => { if(res) { newColis.id = res.id; saveData(); } });
         }
       }
@@ -293,7 +292,6 @@
       return count;
     }
 
-    // === RENDU DU TABLEAU ET REQUÊTES SUPABASE ===
     function renderList(filter = "all", search = "") {
       const tbody = document.getElementById("colisList");
       tbody.innerHTML = "";
@@ -307,7 +305,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="color:#aaa; text-align:center;">Aucun colis dans la liste.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#aaa; text-align:center;">Aucun colis enregistré.</td></tr>`;
         return;
       }
 
