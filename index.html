@@ -2,49 +2,60 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>NOMENA - SCAN RÉEL</title>
-    <!-- Moteur de scan intégré -->
-    <script src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOMENA MOBILE</title>
+    <script src='https://unpkg.com/tesseract.js@v2.1.4/dist/tesseract.min.js'></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
-        .form-container { background: #1e1e1e; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
-        input { width: 90%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #444; color: white; }
-        button { width: 100%; padding: 15px; background: #e91e63; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #status { color: #f44336; margin-top: 10px; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; }
+        .box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        label { display: block; font-size: 1.2em; margin: 15px 0 5px; color: #4fc3f7; }
+        input { width: 100%; padding: 15px; font-size: 1.2em; background: #333; border: 1px solid #555; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 20px; font-size: 1.2em; background: #e91e63; color: white; border: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
+        #status { text-align: center; margin: 15px 0; color: #ffeb3b; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>SCANNER UN COLIS</h2>
-    <!-- Le bouton ouvre l'appareil photo -->
+<div class="box">
+    <h2 style="text-align:center;">SCANNER COLIS</h2>
     <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
-    <button onclick="document.getElementById('camera').click()">📷 SCANNER AR+CO</button>
-    <p id="status">Prêt à scanner...</p>
+    <button onclick="document.getElementById('camera').click()">📷 SCANNER LA LIGNE</button>
+    <div id="status">En attente de scan...</div>
 
-    <div style="margin-top:20px;">
-        <label>N° BC (AR)</label><input type="text" id="bc">
-        <label>N° COLIS (CO)</label><input type="text" id="co">
-    </div>
+    <label>N° BC (AR)</label>
+    <input type="text" id="bc" placeholder="AR...">
+    
+    <label>N° COLIS (CO)</label>
+    <input type="text" id="co" placeholder="CO...">
 </div>
 
 <script>
     document.getElementById('camera').addEventListener('change', async (e) => {
         const status = document.getElementById('status');
-        status.innerText = "Lecture en cours... patiente...";
-        
         const file = e.target.files[0];
+        if(!file) return;
+
+        status.innerText = "Analyse en cours... garde le téléphone stable...";
         
-        // Lancer la lecture OCR
         Tesseract.recognize(file, 'fra').then(({ data: { text } }) => {
-            // Cherche les codes AR... et CO...
-            const arMatch = text.match(/AR[A-Z0-9]+/i);
-            const coMatch = text.match(/CO[A-Z0-9]+/i);
+            console.log("Texte trouvé :", text); // Pour déboguer
             
-            if (arMatch) document.getElementById('bc').value = arMatch[0].toUpperCase();
-            if (coMatch) document.getElementById('co').value = coMatch[0].toUpperCase();
+            // Extraction plus large
+            const bcMatch = text.match(/AR\w+/i);
+            const coMatch = text.match(/CO\w+/i);
             
-            status.innerText = "Scan terminé !";
+            if (bcMatch) {
+                document.getElementById('bc').value = bcMatch[0].toUpperCase();
+            }
+            if (coMatch) {
+                document.getElementById('co').value = coMatch[0].toUpperCase();
+            }
+            
+            if (!bcMatch && !coMatch) {
+                status.innerText = "Codes non trouvés. Essaie de scanner plus près.";
+            } else {
+                status.innerText = "Scan réussi !";
+            }
         });
     });
 </script>
