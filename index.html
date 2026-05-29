@@ -3,42 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOMENA SERVICE - ULTRA SIMPLE</title>
+  <title>NOMENA SERVICE - GESTION COMPLÈTE</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; margin: 0; padding: 10px; }
-    header { text-align: center; margin-bottom: 10px; }
-    header h1 { margin: 0; color: #4fc3f7; font-size: 1.4em; text-transform: uppercase; }
+    html, body { width: 100%; max-width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; overflow-y: hidden; padding: 6px; }
+    header { text-align: center; margin-bottom: 5px; }
+    header h1 { margin: 0; color: #4fc3f7; font-size: 1.3em; text-transform: uppercase; }
     
-    .btn-scan { background: #e91e63; font-size: 1em; padding: 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
+    .btn-scan { background: #e91e63; font-size: 0.85em; padding: 8px 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
     
-    .container { display: flex; gap: 10px; height: calc(100vh - 120px); }
-    .form-column { flex: 0 0 280px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 10px; overflow-y: auto; }
-    .list-column { flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; }
+    .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 45px); align-items: stretch; overflow: hidden; }
+    .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .form-column { flex: 0 0 290px; width: 290px; max-width: 290px; overflow-y: auto; }
+    .list-column { flex: 1 1 auto; min-width: 0; overflow: hidden; }
     
-    label { display: block; margin-top: 8px; text-transform: uppercase; font-size: 0.75em; color: #aaa; }
-    input, select { width: 100%; padding: 6px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.85em; margin-top: 2px; }
-    button[type="submit"] { width: 100%; padding: 8px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; text-transform: uppercase; margin-top: 12px; }
+    h2 { margin: 0 0 5px; text-align: center; text-transform: uppercase; font-size: 0.9em; color: #e91e63; border-bottom: 1px solid #444; padding-bottom: 3px; }
+    .section-title { font-size: 0.75em; color: #4fc3f7; margin: 8px 0 4px 0; text-transform: uppercase; font-weight: bold; background: #222; padding: 2px 4px; border-left: 3px solid #4fc3f7; }
     
-    .table-wrapper { flex: 1; overflow: auto; border: 1px solid #444; border-radius: 4px; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-    th, td { padding: 6px; border: 1px solid #444; text-align: left; text-transform: uppercase; }
-    th { background: #333; color: #ddd; position: sticky; top: 0; }
+    .search-zone { margin-bottom: 5px; }
+    #searchInput { width: 100%; padding: 4px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.75em; }
+    
+    .form-group { display: flex; align-items: center; margin-bottom: 3px; }
+    label { width: 90px; min-width: 90px; font-size: 0.65em; text-transform: uppercase; color: #ccc; font-weight: bold; }
+    input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { flex: 1; padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.75em; min-width: 0; }
+    textarea { height: 24px; resize: none; }
+    
+    .checkbox-group { display: flex; align-items: center; gap: 8px; margin: 6px 0; background: #333; padding: 4px; border-radius: 4px; }
+    .checkbox-group label { width: auto; min-width: auto; color: #fff; font-size: 0.75em; cursor: pointer; }
+    .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+    
+    button[type="submit"] { width: 100%; padding: 6px; background: #2e7d32; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; font-weight: bold; margin-top: 8px; }
+    button[type="submit"]:hover { background: #4caf50; }
+    
+    .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; }
+    table { min-width: 1600px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.72em; }
+    th, td { padding: 4px 5px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* Dimensions des colonnes ajustées aux nouveaux champs */
+    th:nth-child(1), td:nth-child(1) { width: 140px; } /* N° BC */
+    th:nth-child(2), td:nth-child(2) { width: 150px; } /* N° CO */
+    th:nth-child(3), td:nth-child(3) { width: 50px; }  /* EXP */
+    th:nth-child(4), td:nth-child(4) { width: 50px; }  /* DEST */
+    th:nth-child(5), td:nth-child(5) { width: 110px; } /* CLIENT EXP */
+    th:nth-child(6), td:nth-child(6) { width: 110px; } /* CLIENT DEST */
+    th:nth-child(7), td:nth-child(7) { width: 80px; }  /* DATE ARR */
+    th:nth-child(8), td:nth-child(8) { width: 90px; }  /* CHAUFFEUR */
+    th:nth-child(9), td:nth-child(9) { width: 80px; }  /* VEHICULE */
+    th:nth-child(10), td:nth-child(10) { width: 65px; } /* LIVRÉ */
+    th:nth-child(11), td:nth-child(11) { width: 90px; } /* LIVREUR */
+    th:nth-child(12), td:nth-child(12) { width: 110px; }/* DATE/H LIV */
+    th:nth-child(13), td:nth-child(13) { width: 80px; }  /* MONTANT */
+    th:nth-child(14), td:nth-child(14) { width: 90px; }  /* MODE PAIEMENT */
+    th:nth-child(15), td:nth-child(15) { width: 110px; } /* ACTIONS */
+    
+    th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
     tr:nth-child(even) { background: #262626; }
-    .no-colis { color: #4fc3f7; font-weight: bold; }
+    tr.row-selected { background: #004d40 !important; }
     
-    /* MODAL CAMERA */
+    .status-badge { display: inline-block; padding: 2px 4px; border-radius: 3px; font-weight: bold; font-size: 0.85em; text-align: center; width: 100%; }
+    .status-oui { background: #2e7d32; color: white; }
+    .status-non { background: #c62828; color: white; }
+    .code-highlight { color: #4fc3f7; font-weight: bold; }
+    
+    /* CAMERA */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
     #cameraModal.active { display: block; }
     #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
     .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: #d32f2f; color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; cursor: pointer; border: none; }
+    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: #d32f2f; color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; border: none; cursor: pointer; }
     
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: #fff; padding: 20px; border-radius: 10px; z-index: 3001; text-align: center; border: 1px solid #e91e63; }
     .ocr-loading.active { display: block; }
-    .ocr-loading .spin { display: inline-block; width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+    .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* ZONE TICKET IMPRESSION hidden sur écran */
+    #printSection { display: none; }
+    @media print {
+      body * { display: none; }
+      #printSection { display: block; position: absolute; top: 0; left: 0; width: 80mm; color: #000; background: #fff; font-family: monospace; padding: 5mm; font-size: 11pt; }
+      .ticket-title { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 4mm; border-bottom: 2px dashed #000; padding-bottom: 2mm; }
+      .ticket-row { display: flex; justify-content: space-between; margin-bottom: 1.5mm; text-transform: uppercase; }
+      .ticket-divider { border-top: 1px dashed #000; margin: 3mm 0; }
+      .ticket-footer { text-align: center; font-size: 9pt; margin-top: 5mm; border-top: 1px dashed #000; padding-top: 2mm; }
+    }
   </style>
 </head>
 <body>
@@ -47,37 +97,52 @@
 
   <div class="container">
     <div class="form-column">
-      <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE</button>
+      <h2>SAISIE & SUIVI COLIS</h2>
+      <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE DE ROUTE</button>
       
       <form id="colisForm">
         <input type="hidden" id="editIndex" value="-1">
-        <label>N° COLIS (CO)</label>
-        <input type="text" id="noColis" required>
         
-        <label>N° BORDEREAU (AR)</label>
-        <input type="text" id="noBordereau" required>
+        <div class="section-title">En provenance de la feuille</div>
+        <div class="form-group"><label>N° BC (AR)</label><input type="text" id="noBordereau" required placeholder="AR..."></div>
+        <div class="form-group"><label>N° COLIS (CO)</label><input type="text" id="noColis" required placeholder="CO-..."></div>
+        <div class="form-group"><label>EXP (Départ)</label><input type="text" id="exp" placeholder="Ex: RA3"></div>
+        <div class="form-group"><label>DEST (Arrivée)</label><input type="text" id="dest" placeholder="Ex: BTP"></div>
+        <div class="form-group"><label>CLIENT EXP</label><input type="text" id="clientExp" placeholder="Nom expéditeur"></div>
+        <div class="form-group"><label>CLIENT DEST</label><input type="text" id="clientDest" placeholder="Nom destinataire"></div>
+        <div class="form-group"><label>DATE ARRIVÉE</label><input type="date" id="dateArrivee" required></div>
         
-        <label>STATUT</label>
-        <select id="statutLivraison">
-          <option value="Reçu">Reçu</option>
-          <option value="En cours">En cours</option>
-          <option value="Livré">Livré</option>
-        </select>
+        <div class="section-title">Le Camion d'Arrivée</div>
+        <div class="form-group"><label>CHAUFFEUR</label><input type="text" id="chauffeur" placeholder="Nom du chauffeur convoyeur"></div>
+        <div class="form-group"><label>VÉHICULE</label><input type="text" id="vehicule" placeholder="Immatriculation / Camion"></div>
         
-        <button type="submit">Enregistrer</button>
+        <div class="section-title">Livraison Finale & Caisse</div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="isLivre" onchange="toggleLivraisonFields()">
+          <label for="isLivre">COLIS LIVRÉ AU CLIENT</label>
+        </div>
+        
+        <div id="livraisonFormFields" style="display: none;">
+          <div class="form-group"><label>MON LIVREUR</label><input type="text" id="monLivreur" placeholder="Nom de ton livreur"></div>
+          <div class="form-group"><label>DATE LIVRÉ</label><input type="date" id="dateLivraison"></div>
+          <div class="form-group"><label>HEURE LIVRÉ</label><input type="time" id="heureLivraison"></div>
+          <div class="form-group"><label>MONTANT</label><input type="number" id="montant" placeholder="Montant encaissé"></div>
+          <div class="form-group"><label>MODE PAIEMENT</label><input type="text" id="modePaiement" placeholder="Libre (Chèque, Mobile, Banque...)"></div>
+        </div>
+        
+        <button type="submit">Enregistrer les données</button>
       </form>
     </div>
 
     <div class="list-column">
-      <h3 style="margin: 0; font-size: 1em; text-transform: uppercase; color: #4fc3f7;">Liste des Colis</h3>
+      <div class="search-zone">
+        <input type="text" id="searchInput" placeholder="Recherche rapide (N° CO, BC, Client, Chauffeur...)">
+      </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>N° COLIS</th>
-              <th>N° BORDEREAU</th>
-              <th>STATUT</th>
-              <th>ACTIONS</th>
+              <th>N° BORDEREAU</th><th>N° COLIS</th><th>EXP</th><th>DEST</th><th>CLIENT EXP</th><th>CLIENT DEST</th><th>DATE ARR.</th><th>CHAUFFEUR</th><th>VÉHICULE</th><th>LIVRÉ</th><th>MON LIVREUR</th><th>DATE/H LIV.</th><th>MONTANT</th><th>MODE PAIEMENT</th><th>ACTIONS</th>
             </tr>
           </thead>
           <tbody id="colisList"></tbody>
@@ -89,14 +154,16 @@
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 CAPTURER ET LIRE LES CODES</button>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE</button>
     <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Extraction unique des N° BC et N° COLIS...</p>
+    <p>Extraction intelligente des codes AR et CO...</p>
   </div>
+
+  <div id="printSection"></div>
 
   <script>
     const supabaseUrl = "https://putlhepzxfmeqodgruyt.supabase.co";
@@ -106,31 +173,22 @@
 
     const OCRSPACE_API_KEY = "helloworld"; 
 
-    let localColis = JSON.parse(localStorage.getItem("colis_simple")) || [];
+    // Changement de clé pour éviter les conflits d'anciennes structures
+    let colisList = JSON.parse(localStorage.getItem("colis_feuille_v4")) || [];
     let videoStream = null;
 
-    function renderList() {
-      const tbody = document.getElementById("colisList");
-      tbody.innerHTML = "";
-      
-      if (localColis.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa;">Aucun colis. Scannez une feuille.</td></tr>`;
-        return;
-      }
+    function saveData() { localStorage.setItem("colis_feuille_v4", JSON.stringify(colisList)); }
 
-      localColis.forEach((c, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><span class="no-colis">${c.noColis}</span></td>
-          <td>${c.noBordereau}</td>
-          <td>${c.statutLivraison}</td>
-          <td>
-            <button onclick="editColis(${index})" style="background:#ef6c00; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;">Éditer</button>
-            <button onclick="deleteColis(${index})" style="background:#c62828; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;">Suppr</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+    function toggleLivraisonFields() {
+      const checked = document.getElementById("isLivre").checked;
+      document.getElementById("livraisonFormFields").style.display = checked ? "block" : "none";
+      if(checked) {
+        if(!document.getElementById("dateLivraison").value) document.getElementById("dateLivraison").value = new Date().toISOString().slice(0,10);
+        if(!document.getElementById("heureLivraison").value) {
+          const now = new Date();
+          document.getElementById("heureLivraison").value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+      }
     }
 
     function openCamera() {
@@ -150,7 +208,7 @@
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const base64 = canvas.toDataURL('image/jpeg', 0.9);
+      const base64 = canvas.toDataURL('image/jpeg', 0.85);
       closeCamera();
       sendToOCR(base64);
     }
@@ -172,60 +230,84 @@
         const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
         const json = await res.json();
 
-        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Impossible de lire l'image.");
+        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Feuille non détectée ou floue.");
 
         const fullText = json.ParsedResults[0].ParsedText;
-        const count = extractOnlyCodes(fullText);
+        const count = extractFeuilleData(fullText);
 
         document.getElementById('ocrLoading').classList.remove('active');
-        if (count > 0) alert(`✔ Réussi ! ${count} colis enregistrés.`);
-        else alert("Aucun code trouvé. Assurez-vous que les codes CO et AR soient bien visibles et droits.");
+        if (count > 0) alert(`✔ Réussi ! ${count} colis importés depuis la feuille.`);
+        else alert("Aucun code CO- ou AR valide trouvé sur la photo.");
       } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
-        alert("Erreur de scan : " + err.message);
+        alert("Erreur de lecture : " + err.message);
       }
     }
 
-    // === RECHERCHE BRUTE ET ASSOCIEE DES CODES CO ET AR ===
-    function extractOnlyCodes(text) {
+    // EXTRACTION ADAPTÉE À LA FEUILLE DE ROUTE
+    function extractFeuilleData(text) {
       const words = text.split(/[\s,;\n\r]+/).map(w => w.trim().toUpperCase());
       
-      // On isole tous les mots qui contiennent CO ou AR
       let listCO = words.filter(w => w.includes("CO") && w.length >= 8);
       let listAR = words.filter(w => w.includes("AR") && w.length >= 8);
 
       let inserted = 0;
+      const today = new Date().toISOString().slice(0, 10);
 
-      // On crée une entrée pour chaque numéro de colis trouvé
+      // On récupère le chauffeur et véhicule saisis actuellement pour les dupliquer
+      const currentChauffeur = document.getElementById("chauffeur").value.trim().toUpperCase();
+      const currentVehicule = document.getElementById("vehicule").value.trim().toUpperCase();
+      const currentExp = document.getElementById("exp").value.trim().toUpperCase() || "RA3";
+      const currentDest = document.getElementById("dest").value.trim().toUpperCase() || "BTP";
+
       listCO.forEach((coCode, index) => {
-        // On prend le BC correspondant dans la liste, ou la racine par défaut si absent
-        let bcCode = listAR[index] || "AR2605RA";
+        let bcCode = listAR[index] || "AR2605RA"; // Sécurité racine si manque de correspondance
 
         const item = {
-          noColis: coCode,
           noBordereau: bcCode,
-          statutLivraison: "Reçu"
+          noColis: coCode,
+          exp: currentExp,
+          dest: currentDest,
+          clientExp: document.getElementById("clientExp").value.trim().toUpperCase() || "",
+          clientDest: document.getElementById("clientDest").value.trim().toUpperCase() || "",
+          dateArrivee: document.getElementById("dateArrivee").value || today,
+          chauffeur: currentChauffeur,
+          vehicule: currentVehicule,
+          isLivre: false,
+          monLivreur: "",
+          dateLivraison: "",
+          heureLivraison: "",
+          montant: "",
+          modePaiement: ""
         };
 
-        localColis.unshift(item);
+        colisList.unshift(item);
         inserted++;
 
-        // Envoi direct vers ta table Supabase
-        syncWithSupabase(item).then(saved => { if (saved) { item.id = saved.id; localStorage.setItem("colis_simple", JSON.stringify(localColis)); } });
+        syncWithSupabase(item).then(saved => { if (saved) { item.id = saved.id; saveData(); } });
       });
 
-      if (inserted > 0) {
-        localStorage.setItem("colis_simple", JSON.stringify(localColis));
-        renderList();
-      }
+      if (inserted > 0) { saveData(); renderList(); }
       return inserted;
     }
 
     async function syncWithSupabase(item) {
       const payload = {
-        no_colis: item.noColis,
         no_bordereau: item.noBordereau,
-        statut_livraison: item.statutLivraison
+        no_colis: item.noColis,
+        exp: item.exp,
+        dest: item.dest,
+        client_exp: item.clientExp,
+        client_dest: item.clientDest,
+        date_arrivee: item.dateArrivee,
+        chauffeur: item.chauffeur,
+        vehicule: item.vehicule,
+        is_livre: item.isLivre,
+        mon_livreur: item.monLivreur,
+        date_livraison: item.dateLivraison || null,
+        heure_livraison: item.heureLivraison || null,
+        montant: item.montant ? parseFloat(item.montant) : null,
+        mode_paiement: item.modePaiement
       };
       try {
         if (item.id) {
@@ -238,46 +320,189 @@
       } catch (e) { console.error("Erreur Supabase:", e); return null; }
     }
 
-    // FORMULAIRE MANUEL
+    function renderList(search = "") {
+      const tbody = document.getElementById("colisList");
+      tbody.innerHTML = "";
+      const s = search.toLowerCase().trim();
+
+      const filtered = colisList.filter(c => {
+        if (!s) return true;
+        return c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s) || 
+               (c.clientDest && c.clientDest.toLowerCase().includes(s)) || (c.chauffeur && c.chauffeur.toLowerCase().includes(s));
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:#aaa;">Aucun colis dans la base.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((c, index) => {
+        const tr = document.createElement("tr");
+        
+        const badgeLivre = c.isLivre ? `<span class="status-badge status-oui">OUI</span>` : `<span class="status-badge status-non">NON</span>`;
+        const dateHeureLiv = c.isLivre ? `${c.dateLivraison} ${c.heureLivraison}` : "-";
+
+        tr.innerHTML = `
+          <td>${c.noBordereau}</td>
+          <td><span class="code-highlight">${c.noColis}</span></td>
+          <td>${c.exp || "-"}</td>
+          <td>${c.dest || "-"}</td>
+          <td>${c.clientExp || "-"}</td>
+          <td>${c.clientDest || "-"}</td>
+          <td>${c.dateArrivee}</td>
+          <td>${c.chauffeur || "-"}</td>
+          <td>${c.vehicule || "-"}</td>
+          <td>${badgeLivre}</td>
+          <td>${c.monLivreur || "-"}</td>
+          <td>${dateHeureLiv}</td>
+          <td>${c.montant ? c.montant + ' Ar' : "-"}</td>
+          <td>${c.modePaiement || "-"}</td>
+          <td>
+            <button onclick="editColis(${index})" style="background:#ef6c00;">Éditer</button>
+            <button onclick="printTicket(${index})" style="background:#0288d1;">Imprimer</button>
+            <button onclick="deleteColis(${index})" style="background:#c62828;">X</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // SOUCOUMISSION DU FORMULAIRE MANUEL AVEC RETENTION DE CONTEXTE CAMION
     document.getElementById("colisForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const idx = parseInt(document.getElementById("editIndex").value);
       
       const item = {
-        id: idx >= 0 ? localColis[idx].id : undefined,
-        noColis: document.getElementById("noColis").value.trim().toUpperCase(),
+        id: idx >= 0 ? colisList[idx].id : undefined,
         noBordereau: document.getElementById("noBordereau").value.trim().toUpperCase(),
-        statutLivraison: document.getElementById("statutLivraison").value
+        noColis: document.getElementById("noColis").value.trim().toUpperCase(),
+        exp: document.getElementById("exp").value.trim().toUpperCase(),
+        dest: document.getElementById("dest").value.trim().toUpperCase(),
+        clientExp: document.getElementById("clientExp").value.trim().toUpperCase(),
+        clientDest: document.getElementById("clientDest").value.trim().toUpperCase(),
+        dateArrivee: document.getElementById("dateArrivee").value,
+        chauffeur: document.getElementById("chauffeur").value.trim().toUpperCase(),
+        vehicule: document.getElementById("vehicule").value.trim().toUpperCase(),
+        isLivre: document.getElementById("isLivre").checked,
+        monLivreur: document.getElementById("isLivre").checked ? document.getElementById("monLivreur").value.trim().toUpperCase() : "",
+        dateLivraison: document.getElementById("isLivre").checked ? document.getElementById("dateLivraison").value : "",
+        heureLivraison: document.getElementById("isLivre").checked ? document.getElementById("heureLivraison").value : "",
+        montant: document.getElementById("isLivre").checked ? document.getElementById("montant").value : "",
+        modePaiement: document.getElementById("isLivre").checked ? document.getElementById("modePaiement").value.trim().toUpperCase() : ""
       };
 
-      if (idx >= 0) localColis[idx] = item; else localColis.unshift(item);
-      localStorage.setItem("colis_simple", JSON.stringify(localColis));
+      if (idx >= 0) {
+        colisList[idx] = item;
+      } else {
+        colisList.unshift(item);
+      }
+      saveData();
 
       const saved = await syncWithSupabase(item);
-      if (saved && idx < 0) localColis[0].id = saved.id;
-      localStorage.setItem("colis_simple", JSON.stringify(localColis));
+      if (saved && idx < 0) colisList[0].id = saved.id;
+      saveData();
 
-      document.getElementById("editIndex").value = "-1";
+      // On réinitialise mais en GARDANT Chauffeur, Véhicule, EXP, DEST et Date Arrivée pour le colis suivant (Gain de temps pro)
+      const savedChauffeur = document.getElementById("chauffeur").value;
+      const savedVehicule = document.getElementById("vehicule").value;
+      const savedExp = document.getElementById("exp").value;
+      const savedDest = document.getElementById("dest").value;
+      const savedDate = document.getElementById("dateArrivee").value;
+
       this.reset();
+      document.getElementById("editIndex").value = "-1";
+
+      document.getElementById("chauffeur").value = savedChauffeur;
+      document.getElementById("vehicule").value = savedVehicule;
+      document.getElementById("exp").value = savedExp;
+      document.getElementById("dest").value = savedDest;
+      document.getElementById("dateArrivee").value = savedDate;
+
+      toggleLivraisonFields();
       renderList();
     });
 
     function editColis(idx) {
       document.getElementById("editIndex").value = idx;
-      document.getElementById("noColis").value = localColis[idx].noColis;
-      document.getElementById("noBordereau").value = localColis[idx].noBordereau;
-      document.getElementById("statutLivraison").value = localColis[idx].statutLivraison;
+      const c = colisList[idx];
+      
+      document.getElementById("noBordereau").value = c.noBordereau;
+      document.getElementById("noColis").value = c.noColis;
+      document.getElementById("exp").value = c.exp || "";
+      document.getElementById("dest").value = c.dest || "";
+      document.getElementById("clientExp").value = c.clientExp || "";
+      document.getElementById("clientDest").value = c.clientDest || "";
+      document.getElementById("dateArrivee").value = c.dateArrivee;
+      document.getElementById("chauffeur").value = c.chauffeur || "";
+      document.getElementById("vehicule").value = c.vehicule || "";
+      
+      document.getElementById("isLivre").checked = c.isLivre;
+      toggleLivraisonFields();
+
+      if(c.isLivre) {
+        document.getElementById("monLivreur").value = c.monLivreur || "";
+        document.getElementById("dateLivraison").value = c.dateLivraison || "";
+        document.getElementById("heureLivraison").value = c.heureLivraison || "";
+        document.getElementById("montant").value = c.montant || "";
+        document.getElementById("modePaiement").value = c.modePaiement || "";
+      }
+      
+      // Petit scroll pour remonter au formulaire sur mobile
+      document.querySelector('.form-column').scrollTop = 0;
     }
 
     function deleteColis(idx) {
-      if (!confirm("Supprimer ce colis ?")) return;
-      if (localColis[idx].id) sb.from("colis").delete().eq("id", localColis[idx].id);
-      localColis.splice(idx, 1);
-      localStorage.setItem("colis_simple", JSON.stringify(localColis));
-      renderList();
+      if (!confirm("Supprimer définitivement ce colis de l'application ?")) return;
+      if (colisList[idx].id) sb.from("colis").delete().eq("id", colisList[idx].id);
+      colisList.splice(idx, 1); saveData(); renderList();
     }
 
-    window.addEventListener("DOMContentLoaded", renderList);
+    // LOGIQUE D'IMPRESSION DU REÇU PRO (TICKET COMMERCE)
+    function printTicket(idx) {
+      const c = colisList[idx];
+      const printZone = document.getElementById("printSection");
+      
+      let html = `
+        <div class="ticket-title">NOMENA SERVICE<br><span style="font-size:10pt;">REÇU DE LIVRAISON</span></div>
+        <div class="ticket-row"><span>Date d'Arrivée:</span> <span>${c.dateArrivee}</span></div>
+        <div class="ticket-row"><span>Axe Voyage:</span> <span>${c.exp || '-'} ➔ ${c.dest || '-'}</span></div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-row"><span>N° Bordereau:</span> <span>${c.noBordereau}</span></div>
+        <div class="ticket-row"><span>N° Colis:</span> <span><strong>${c.noColis}</strong></span></div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-row"><span>Expéditeur:</span> <span>${c.clientExp || '-'}</span></div>
+        <div class="ticket-row"><span>Destinataire:</span> <span>${c.clientDest || '-'}</span></div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-row"><span>Statut Final:</span> <span>${c.isLivre ? 'LIVRÉ' : 'À L\'AGENCE'}</span></div>
+      `;
+
+      if(c.isLivre) {
+        html += `
+          <div class="ticket-row"><span>Livreur:</span> <span>${c.monLivreur || '-'}</span></div>
+          <div class="ticket-row"><span>Date Sortie:</span> <span>${c.dateLivraison} à ${c.heureLivraison}</span></div>
+          <div class="ticket-divider"></div>
+          <div class="ticket-row" style="font-size:12pt; font-weight:bold;"><span>Montant Payé:</span> <span>${c.montant ? c.montant + ' Ar' : '0 Ar'}</span></div>
+          <div class="ticket-row"><span>Mode Paiement:</span> <span>${c.modePaiement || '-'}</span></div>
+        `;
+      }
+
+      html += `
+        <div class="ticket-footer">
+          Merci pour votre confiance !<br>
+          NOMENA SERVICE à votre écoute.
+        </div>
+      `;
+
+      printZone.innerHTML = html;
+      window.print();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function() { renderList(this.value); });
+    
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("dateArrivee").value = new Date().toISOString().slice(0, 10);
+      renderList();
+    });
   </script>
 </body>
 </html>
