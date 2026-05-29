@@ -3,78 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOMENA - GESTION SÉCURISÉE</title>
-    <script src='https://unpkg.com/tesseract.js@v2.1.4/dist/tesseract.min.js'></script>
+    <title>NOMENA - SAISIE RAPIDE</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f4; color: #333; padding: 10px; }
-        .container { max-width: 600px; margin: auto; }
-        .section { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { padding: 12px; border: none; border-radius: 4px; background: #2c3e50; color: white; width: 100%; margin-top: 5px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        body { font-family: Arial, sans-serif; background: #eee; padding: 20px; }
+        .box { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 2px 5px #ccc; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 18px; }
+        button { width: 100%; padding: 20px; background: #27ae60; color: white; border: none; font-size: 18px; border-radius: 5px; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>Gestion Colis Nomena</h2>
+    <div class="box">
+        <h2>Saisie Colis</h2>
+        <input type="text" id="bc" placeholder="Entrer N° AR...">
+        <input type="text" id="co" placeholder="Entrer N° CO...">
+        <button onclick="enregistrer()">ENREGISTRER</button>
+        <button onclick="sauvegarderJSON()" style="background:#2980b9; margin-top:10px;">💾 EXPORTER JSON</button>
+    </div>
     
-    <div class="section">
-        <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
-        <button onclick="document.getElementById('camera').click()" style="background:#e67e22;">📷 SCANNER (AR+CO)</button>
-        <input type="text" id="bc" placeholder="N° BC (AR)">
-        <input type="text" id="co" placeholder="N° COLIS (CO)">
-        <button onclick="addColis()" style="background:#27ae60;">ENREGISTRER</button>
-        <button onclick="exportData()" style="background:#2980b9;">💾 EXPORTER TOUT (JSON)</button>
-    </div>
+    <table id="tableau">
+        <thead><tr><th>BC / COLIS</th><th>ACTION</th></tr></thead>
+        <tbody id="corps"></tbody>
+    </table>
 
-    <div class="section">
-        <table>
-            <thead><tr><th>COLIS</th><th>ACTION</th></tr></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-    let list = JSON.parse(localStorage.getItem('colis_save')) || [];
-
-    function addColis() {
-        const bc = document.getElementById('bc').value;
-        const co = document.getElementById('co').value;
-        if(!bc || !co) return alert("Remplis les codes !");
+    <script>
+        let liste = JSON.parse(localStorage.getItem('colis_db')) || [];
         
-        list.unshift({bc, co});
-        localStorage.setItem('colis_save', JSON.stringify(list));
-        render();
-        document.getElementById('bc').value = '';
-        document.getElementById('co').value = '';
-    }
+        function enregistrer() {
+            let bc = document.getElementById('bc').value;
+            let co = document.getElementById('co').value;
+            if(bc && co) {
+                liste.push({bc, co});
+                localStorage.setItem('colis_db', JSON.stringify(liste));
+                document.getElementById('bc').value = '';
+                document.getElementById('co').value = '';
+                afficher();
+            }
+        }
+        
+        function afficher() {
+            let html = "";
+            liste.forEach((c, i) => {
+                html += `<tr><td>${c.bc}<br>${c.co}</td><td><button onclick="supprimer(${i})">X</button></td></tr>`;
+            });
+            document.getElementById('corps').innerHTML = html;
+        }
 
-    document.getElementById('camera').addEventListener('change', async (e) => {
-        Tesseract.recognize(e.target.files[0], 'fra').then(({ data: { text } }) => {
-            document.getElementById('bc').value = (text.match(/AR\w+/i) || [''])[0];
-            document.getElementById('co').value = (text.match(/CO\w+/i) || [''])[0];
-        });
-    });
-
-    function render() {
-        document.getElementById('tableBody').innerHTML = list.map((c, i) => `
-            <tr><td>${c.bc}<br>${c.co}</td><td><button onclick="del(${i})">X</button></td></tr>
-        `).join('');
-    }
-
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(list));
-        const dl = document.createElement('a');
-        dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "sauvegarde.json");
-        dl.click();
-    }
-
-    function del(i) { list.splice(i, 1); localStorage.setItem('colis_save', JSON.stringify(list)); render(); }
-    render();
-</script>
+        function supprimer(i) { liste.splice(i, 1); localStorage.setItem('colis_db', JSON.stringify(liste)); afficher(); }
+        
+        function sauvegarderJSON() {
+            let data = JSON.stringify(liste);
+            let blob = new Blob([data], {type: "application/json"});
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url; a.download = "colis_nomena.json"; a.click();
+        }
+        afficher();
+    </script>
 </body>
 </html>
