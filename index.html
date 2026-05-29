@@ -3,74 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOMENA - GESTION COMPLÈTE</title>
+    <title>NOMENA - GESTION SÉCURISÉE</title>
     <script src='https://unpkg.com/tesseract.js@v2.1.4/dist/tesseract.min.js'></script>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 10px; }
-        .view { display: none; }
-        .active { display: block; }
-        .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        button { padding: 15px; border-radius: 5px; border: none; background: #333; color: white; flex: 1; }
-        .btn-active { background: #e91e63; }
-        input { width: 100%; padding: 10px; margin: 5px 0; background: #222; color: #fff; border: 1px solid #444; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8em; }
-        th, td { border: 1px solid #444; padding: 5px; }
+        body { font-family: sans-serif; background: #f4f4f4; color: #333; padding: 10px; }
+        .container { max-width: 600px; margin: auto; }
+        .section { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 12px; border: none; border-radius: 4px; background: #2c3e50; color: white; width: 100%; margin-top: 5px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="nav-bar">
-    <button id="btn1" class="btn-active" onclick="show('scan')">SCANNER</button>
-    <button id="btn2" onclick="show('tableau')">TABLEAU</button>
-</div>
+<div class="container">
+    <h2>Gestion Colis Nomena</h2>
+    
+    <div class="section">
+        <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
+        <button onclick="document.getElementById('camera').click()" style="background:#e67e22;">📷 SCANNER (AR+CO)</button>
+        <input type="text" id="bc" placeholder="N° BC (AR)">
+        <input type="text" id="co" placeholder="N° COLIS (CO)">
+        <button onclick="addColis()" style="background:#27ae60;">ENREGISTRER</button>
+        <button onclick="exportData()" style="background:#2980b9;">💾 EXPORTER TOUT (JSON)</button>
+    </div>
 
-<!-- ZONE SCAN -->
-<div id="scan" class="view active">
-    <button style="width:100%; background:#e91e63;" onclick="document.getElementById('camera').click()">📷 LANCER SCAN</button>
-    <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
-    <label>AR</label><input type="text" id="bc">
-    <label>CO</label><input type="text" id="co">
-    <button onclick="save()">ENREGISTRER</button>
-    <p id="status"></p>
-</div>
-
-<!-- ZONE TABLEAU -->
-<div id="tableau" class="view">
-    <table>
-        <thead><tr><th>AR/CO</th><th>STATUT</th></tr></thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="section">
+        <table>
+            <thead><tr><th>COLIS</th><th>ACTION</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    let list = JSON.parse(localStorage.getItem('colis_data')) || [];
+    let list = JSON.parse(localStorage.getItem('colis_save')) || [];
 
-    function show(v) {
-        document.querySelectorAll('.view').forEach(d => d.style.display = 'none');
-        document.getElementById(v).style.display = 'block';
-        document.getElementById('btn1').className = (v=='scan') ? 'btn-active' : '';
-        document.getElementById('btn2').className = (v=='tableau') ? 'btn-active' : '';
-        if(v=='tableau') render();
+    function addColis() {
+        const bc = document.getElementById('bc').value;
+        const co = document.getElementById('co').value;
+        if(!bc || !co) return alert("Remplis les codes !");
+        
+        list.unshift({bc, co});
+        localStorage.setItem('colis_save', JSON.stringify(list));
+        render();
+        document.getElementById('bc').value = '';
+        document.getElementById('co').value = '';
     }
 
     document.getElementById('camera').addEventListener('change', async (e) => {
-        document.getElementById('status').innerText = "Analyse...";
         Tesseract.recognize(e.target.files[0], 'fra').then(({ data: { text } }) => {
             document.getElementById('bc').value = (text.match(/AR\w+/i) || [''])[0];
             document.getElementById('co').value = (text.match(/CO\w+/i) || [''])[0];
-            document.getElementById('status').innerText = "Terminé !";
         });
     });
 
-    function save() {
-        list.push({bc: document.getElementById('bc').value, co: document.getElementById('co').value});
-        localStorage.setItem('colis_data', JSON.stringify(list));
-        alert("Enregistré !");
+    function render() {
+        document.getElementById('tableBody').innerHTML = list.map((c, i) => `
+            <tr><td>${c.bc}<br>${c.co}</td><td><button onclick="del(${i})">X</button></td></tr>
+        `).join('');
     }
 
-    function render() {
-        document.getElementById('tableBody').innerHTML = list.map(c => `<tr><td>${c.bc}/${c.co}</td><td>En attente</td></tr>`).join('');
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(list));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", "sauvegarde.json");
+        dl.click();
     }
+
+    function del(i) { list.splice(i, 1); localStorage.setItem('colis_save', JSON.stringify(list)); render(); }
+    render();
 </script>
 </body>
 </html>
