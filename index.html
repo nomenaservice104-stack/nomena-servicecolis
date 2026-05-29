@@ -76,15 +76,17 @@
     .btn-print { background: #1565c0; }
     .btn-close { background: #666; }
     
-    /* Fenêtre plein écran caméra */
-    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
+    /* MODIFICATION ICI : Fenêtre caméra forcée avec boutons fixés en bas */
+    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 1000; overflow: hidden; }
     #cameraModal.active { display: flex; flex-direction: column; }
-    #cameraVideo { flex: 1; width: 100%; object-fit: cover; }
+    #cameraVideo { width: 100%; height: calc(100vh - 80px); object-fit: cover; background: #000; }
     #cameraCanvas { display: none; }
-    .camera-controls { display: flex; gap: 10px; padding: 15px; background: #222; }
-    .camera-controls button { flex: 1; padding: 14px; font-size: 0.9em; font-weight: bold; }
-    .btn-capture { background: #3a9d23; color: white; border: none; border-radius: 4px; text-transform: uppercase; }
-    #cameraModal .btn-close { background: #d32f2f; color: white; border: none; border-radius: 4px; text-transform: uppercase; }
+    .camera-controls { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; display: flex; gap: 12px; padding: 12px; background: rgba(34, 34, 34, 0.95); z-index: 1005; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); }
+    .camera-controls button { flex: 1; height: 100%; font-size: 1em; font-weight: bold; border-radius: 6px; border: none; text-transform: uppercase; cursor: pointer; color: white; }
+    .btn-capture { background: #3a9d23; }
+    .btn-capture:hover { background: #4caf50; }
+    #cameraModal .btn-close { background: #d32f2f; }
+    #cameraModal .btn-close:hover { background: #f44336; }
     
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 1001; text-align: center; }
     .ocr-loading.active { display: block; }
@@ -255,7 +257,7 @@
     function renderLivrePar(v) { return `<span class="badge badge-cyan">${(v || "").toString()}</span>`; }
     function renderStatut(v) { const s = normalize(v); if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">${(v || "").toString()}</span>`; if (s === "EN COURS") return `<span class="badge badge-orange">${(v || "").toString()}</span>`; if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">${(v || "").toString()}</span>`; if (s === "RETARD") return `<span class="badge badge-red">${(v || "").toString()}</span>`; if (s === "EN INSTANCE") return `<span class="badge badge-gray">${(v || "").toString()}</span>`; return `<span class="badge badge-gray">${(v || "").toString()}</span>`; }
 
-    // === FONCTIONS CAPTURE PHOTO ===
+    // === FONCTIONS APPAREIL PHOTO ===
     function openCamera() {
       const modal = document.getElementById('cameraModal');
       modal.classList.add('active');
@@ -382,7 +384,7 @@
       document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // === GESTION DES LISTES ET SUPABASE ===
+    // === GESTION INTERNE ET SUPABASE ===
     function exportBackup() {
       const data = JSON.stringify(colisList, null, 2);
       const blob = new Blob([data], { type: "application/json" });
