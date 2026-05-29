@@ -3,62 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOMENA SERVICE - SCAN ALIGNÉ</title>
+  <title>NOMENA SERVICE - GESTION</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-    html, body { width: 100%; max-width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
-    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; overflow-y: hidden; padding: 6px; }
-    header { text-align: center; margin-bottom: 5px; }
-    header h1 { margin: 0; color: #4fc3f7; font-size: 1.3em; text-transform: uppercase; }
-    
-    .btn-scan { background: #e91e63; font-size: 0.85em; padding: 8px 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
-    
-    .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 45px); align-items: stretch; overflow: hidden; }
-    .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .form-column { flex: 0 0 290px; width: 290px; max-width: 290px; overflow-y: auto; }
-    .list-column { flex: 1 1 auto; min-width: 0; overflow: hidden; }
-    
-    h2 { margin: 0 0 5px; text-align: center; text-transform: uppercase; font-size: 0.9em; color: #e91e63; border-bottom: 1px solid #444; padding-bottom: 3px; }
-    .section-title { font-size: 0.75em; color: #4fc3f7; margin: 8px 0 4px 0; text-transform: uppercase; font-weight: bold; background: #222; padding: 2px 4px; border-left: 3px solid #4fc3f7; }
-    
-    .search-zone { margin-bottom: 5px; }
-    #searchInput { width: 100%; padding: 4px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.75em; }
-    
-    .form-group { display: flex; align-items: center; margin-bottom: 3px; }
-    label { width: 90px; min-width: 90px; font-size: 0.65em; text-transform: uppercase; color: #ccc; font-weight: bold; }
-    input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { flex: 1; padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.75em; min-width: 0; }
-    
-    .checkbox-group { display: flex; align-items: center; gap: 8px; margin: 6px 0; background: #333; padding: 4px; border-radius: 4px; }
-    .checkbox-group label { width: auto; min-width: auto; color: #fff; font-size: 0.75em; cursor: pointer; }
-    
-    .form-buttons { display: flex; gap: 4px; margin-top: 8px; }
-    button[type="submit"] { flex: 2; padding: 8px; background: #2e7d32; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; font-weight: bold; }
-    .btn-clear { flex: 1; padding: 8px; background: #757575; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; text-transform: uppercase; }
-    
-    .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; }
-    table { min-width: 1600px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.72em; }
-    th, td { padding: 4px 5px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
-    
-    th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
-    tr:nth-child(even) { background: #262626; }
-    .status-badge { display: inline-block; padding: 2px 4px; border-radius: 3px; font-weight: bold; font-size: 0.85em; text-align: center; width: 100%; }
-    .status-oui { background: #2e7d32; color: white; }
-    .status-non { background: #c62828; color: white; }
-    .code-highlight { color: #4fc3f7; font-weight: bold; }
-    
-    /* CAMERA MODAL */
-    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
-    #cameraModal.active { display: block; }
-    #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
-    .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: #d32f2f; color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; border: none; cursor: pointer; }
-    
-    .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: #fff; padding: 20px; border-radius: 10px; z-index: 3001; text-align: center; border: 1px solid #e91e63; }
-    .ocr-loading.active { display: block; }
-    .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    #printSection { display: none; }
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; margin: 0; padding: 10px; }
+    header { text-align: center; margin-bottom: 10px; }
+    .container { display: flex; gap: 10px; height: 90vh; }
+    .form-column { width: 300px; background: #2a2a2a; padding: 10px; border-radius: 8px; overflow-y: auto; }
+    .list-column { flex: 1; background: #2a2a2a; padding: 10px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+    .btn-scan { background: #e91e63; color: white; width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+    .form-group { margin-bottom: 8px; }
+    label { display: block; font-size: 0.7em; color: #aaa; text-transform: uppercase; }
+    input { width: 100%; padding: 5px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; }
+    .table-wrapper { flex: 1; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+    th, td { border: 1px solid #444; padding: 6px; text-align: left; }
+    th { background: #333; position: sticky; top: 0; }
+    .btn-action { padding: 4px 8px; cursor: pointer; border: none; border-radius: 3px; margin-right: 2px; }
   </style>
 </head>
 <body>
@@ -67,316 +29,89 @@
 
   <div class="container">
     <div class="form-column">
-      <h2>SAISIE & SUIVI COLIS</h2>
-      <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE DE ROUTE</button>
-      
+      <h2>SAISIE COLIS</h2>
+      <button class="btn-scan" onclick="openCamera()">📷 SCANNER FEUILLE</button>
       <form id="colisForm">
         <input type="hidden" id="editIndex" value="-1">
-        
-        <div class="section-title">Données Colis</div>
         <div class="form-group"><label>N° BC (AR)</label><input type="text" id="noBordereau" required></div>
         <div class="form-group"><label>N° COLIS (CO)</label><input type="text" id="noColis" required></div>
-        <div class="form-group"><label>EXP (Départ)</label><input type="text" id="exp"></div>
-        <div class="form-group"><label>DEST (Arrivée)</label><input type="text" id="dest"></div>
-        <div class="form-group"><label>CLIENT EXP</label><input type="text" id="clientExp"></div>
-        <div class="form-group"><label>CLIENT DEST</label><input type="text" id="clientDest"></div>
-        <div class="form-group"><label>DATE ARRIVÉE</label><input type="date" id="dateArrivee" required></div>
-        
-        <div class="section-title">Le Camion</div>
-        <div class="form-group"><label>CHAUFFEUR</label><input type="text" id="chauffeur"></div>
-        <div class="form-group"><label>VÉHICULE</label><input type="text" id="vehicule"></div>
-        
-        <div class="section-title">Livraison Finalisée</div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="isLivre" onchange="toggleLivraisonFields()">
-          <label for="isLivre">COLIS LIVRÉ AU CLIENT</label>
+        <div class="form-group"><label>EXP / DEST</label><div style="display:flex; gap:5px;"><input type="text" id="exp"><input type="text" id="dest"></div></div>
+        <div class="form-group"><label>CLIENT EXP / DEST</label><input type="text" id="clientExp"><input type="text" id="clientDest"></div>
+        <div class="form-group"><label>DATE ARRIVÉE</label><input type="date" id="dateArrivee"></div>
+        <div class="form-group"><label>CHAUFFEUR / VÉHICULE</label><div style="display:flex; gap:5px;"><input type="text" id="chauffeur"><input type="text" id="vehicule"></div></div>
+        <div class="form-group"><input type="checkbox" id="isLivre"> <label style="display:inline;" for="isLivre">LIVRÉ ?</label></div>
+        <div id="livraisonFormFields">
+            <div class="form-group"><label>LIVREUR</label><input type="text" id="monLivreur"></div>
+            <div class="form-group"><label>MONTANT / PAIEMENT</label><div style="display:flex; gap:5px;"><input type="number" id="montant"><input type="text" id="modePaiement"></div></div>
         </div>
-        
-        <div id="livraisonFormFields" style="display: none;">
-          <div class="form-group"><label>MON LIVREUR</label><input type="text" id="monLivreur"></div>
-          <div class="form-group"><label>DATE LIVRÉ</label><input type="date" id="dateLivraison"></div>
-          <div class="form-group"><label>HEURE LIVRÉ</label><input type="time" id="heureLivraison"></div>
-          <div class="form-group"><label>MONTANT</label><input type="number" id="montant"></div>
-          <div class="form-group"><label>MODE PAIEMENT</label><input type="text" id="modePaiement"></div>
-        </div>
-        
-        <div class="form-buttons">
-          <button type="submit">Enregistrer</button>
-          <button type="button" class="btn-clear" onclick="clearFormManual()">Vider</button>
-        </div>
+        <button type="submit" style="width:100%; padding:10px; background:green; color:white; border:none;">ENREGISTRER</button>
       </form>
     </div>
 
     <div class="list-column">
-      <div class="search-zone">
-        <input type="text" id="searchInput" placeholder="Recherche rapide...">
-      </div>
       <div class="table-wrapper">
         <table>
-          <thead>
-            <tr>
-              <th>N° BORDEREAU</th><th>N° COLIS</th><th>EXP</th><th>DEST</th><th>CLIENT EXP</th><th>CLIENT DEST</th><th>DATE ARR.</th><th>CHAUFFEUR</th><th>VÉHICULE</th><th>LIVRÉ</th><th>MON LIVREUR</th><th>DATE/H LIV.</th><th>MONTANT</th><th>MODE PAIEMENT</th><th>ACTIONS</th>
-            </tr>
-          </thead>
+          <thead><tr><th>BC</th><th>COLIS</th><th>EXP</th><th>DEST</th><th>ACTIONS</th></tr></thead>
           <tbody id="colisList"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <div id="cameraModal">
-    <video id="cameraVideo" autoplay playsinline></video>
-    <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 SÉCURISER ET IMPORTER LES CODES</button>
-    <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
+  <div id="cameraModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black;">
+    <video id="cameraVideo" style="width:100%; height:80%; object-fit:contain;" autoplay playsinline></video>
+    <button style="width:100%; padding:20px; font-size:1.5em; background:green;" onclick="capturePhoto()">CAPTURER</button>
   </div>
-
-  <div id="ocrLoading" class="ocr-loading">
-    <div class="spin"></div>
-    <p>Analyse des lignes physiques du document...</p>
-  </div>
-
-  <div id="printSection"></div>
 
   <script>
-    const supabaseUrl = "https://putlhepzxfmeqodgruyt.supabase.co";
-    const supabaseKey = "sb_publishable_bZHu3Rz9HgwvHMt2w__gEg_QhB9ecJd";
-    const { createClient } = supabase;
-    const sb = createClient(supabaseUrl, supabaseKey);
-
-    // ACTIVATION DU MOTEUR D'ALIGNED ET RETOUR COMPLET DES COORDONNÉES EN PIXELS (isOverlay=true)
-    const OCRSPACE_API_KEY = "helloworld"; 
-
-    let colisList = JSON.parse(localStorage.getItem("colis_aligned_v6")) || [];
-    let videoStream = null;
-
-    function saveData() { localStorage.setItem("colis_aligned_v6", JSON.stringify(colisList)); }
-
-    function toggleLivraisonFields() {
-      const checked = document.getElementById("isLivre").checked;
-      document.getElementById("livraisonFormFields").style.display = checked ? "block" : "none";
-    }
+    const sb = supabase.createClient("https://putlhepzxfmeqodgruyt.supabase.co", "sb_publishable_bZHu3Rz9HgwvHMt2w__gEg_QhB9ecJd");
+    let colisList = JSON.parse(localStorage.getItem("colis_data")) || [];
 
     function openCamera() {
-      document.getElementById('cameraModal').classList.add('active');
-      navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
-      }).then(stream => { videoStream = stream; document.getElementById('cameraVideo').srcObject = stream; })
-        .catch(err => { alert('Erreur caméra: ' + err.message); closeCamera(); });
+      document.getElementById('cameraModal').style.display = 'block';
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(s => document.getElementById('cameraVideo').srcObject = s);
     }
 
-    function capturePhoto() {
+    async function capturePhoto() {
       const video = document.getElementById('cameraVideo');
-      const canvas = document.getElementById('cameraCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const base64 = canvas.toDataURL('image/jpeg', 0.85);
-      closeCamera();
-      sendToOCR(base64);
-    }
-
-    function closeCamera() {
-      document.getElementById('cameraModal').classList.remove('active');
-      if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-    }
-
-    async function sendToOCR(base64Data) {
-      document.getElementById('ocrLoading').classList.add('active');
-      try {
-        const formData = new FormData();
-        formData.append('base64Image', base64Data);
-        formData.append('apikey', OCRSPACE_API_KEY);
-        formData.append('language', 'fre');
-        formData.append('isOverlayRequired', 'true'); // OBLIGATOIRE POUR OBTENIR LES COORDONNÉES DES LIGNES
-        formData.append('OCREngine', '2');
-
-        const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
-        const json = await res.json();
-
-        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Feuille illisible.");
-
-        const count = processAlignedOCR(json.ParsedResults[0]);
-
-        document.getElementById('ocrLoading').classList.remove('active');
-        if (count > 0) alert(`✔ Réussi ! ${count} lignes importées sans décalage.`);
-        else alert("Aucune ligne valide contenant à la fois CO et AR n'a été détectée.");
-      } catch (err) {
-        document.getElementById('ocrLoading').classList.remove('active');
-        alert("Erreur analyse : " + err.message);
-      }
-    }
-
-    // ALGORITHME DE CORRÉLATION PAR LIGNE RECONSTRUITE
-    function processAlignedOCR(parsedResult) {
-      if (!parsedResult.TextOverlay || !parsedResult.TextOverlay.Lines) return 0;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const data = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('cameraModal').style.display = 'none';
       
-      const linesData = parsedResult.TextOverlay.Lines;
-      let detectedPairs = [];
-      const today = new Date().toISOString().slice(0, 10);
+      // Envoi OCR
+      const fd = new FormData(); fd.append('base64Image', data); fd.append('apikey', 'helloworld'); fd.append('language', 'fre');
+      const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: fd });
+      const json = await res.json();
+      processOCR(json.ParsedResults[0].ParsedText);
+    }
 
-      // Étape 1 : Isoler tous les mots typés avec leur hauteur (Top) exacte
-      let rawTokens = [];
-      linesData.forEach(line => {
-        line.Words.forEach(w => {
-          const text = w.WordText.toUpperCase().trim();
-          if ((text.includes("CO") || text.includes("AR")) && text.length >= 8) {
-            rawTokens.push({ text: text, top: w.Top, height: w.Height });
-          }
-        });
-      });
-
-      // Étape 2 : Regrouper les tokens qui partagent la même marge de hauteur (Ligne physique)
-      let usedIndexes = new Set();
+    function processOCR(text) {
+      const words = text.split(/[\s\n]+/).filter(w => w.length > 8);
+      const arCodes = words.filter(w => w.startsWith("AR"));
+      const coCodes = words.filter(w => w.startsWith("CO"));
       
-      for (let i = 0; i < rawTokens.length; i++) {
-        if (usedIndexes.has(i)) continue;
-        let t1 = rawTokens[i];
-
-        // Chercher un partenaire sur la même ligne (marge d'erreur de 15 pixels de hauteur)
-        for (let j = i + 1; j < rawTokens.length; j++) {
-          if (usedIndexes.has(j)) continue;
-          let t2 = rawTokens[j];
-
-          if (Math.abs(t1.top - t2.top) <= 18) {
-            let coCode = t1.text.includes("CO") ? t1.text : (t2.text.includes("CO") ? t2.text : null);
-            let arCode = t1.text.includes("AR") ? t1.text : (t2.text.includes("AR") ? t2.text : null);
-
-            if (coCode && arCode) {
-              detectedPairs.push({ co: coCode, ar: arCode });
-              usedIndexes.add(i);
-              usedIndexes.add(j);
-              break;
-            }
-          }
-        }
+      const total = Math.min(arCodes.length, coCodes.length);
+      for(let i=0; i<total; i++) {
+        colisList.unshift({ noBordereau: arCodes[i], noColis: coCodes[i], dateArrivee: new Date().toISOString().slice(0,10) });
       }
-
-      // Étape 3 : Injecter les couples validés et synchroniser Supabase
-      let count = 0;
-      detectedPairs.forEach(pair => {
-        const item = {
-          noBordereau: pair.ar,
-          noColis: pair.co,
-          exp: "", clientExp: "", dest: "", clientDest: "", dateArrivee: today, chauffeur: "", vehicule: "",
-          isLivre: false, monLivreur: "", dateLivraison: "", heureLivraison: "", montant: "", modePaiement: ""
-        };
-        colisList.unshift(item);
-        count++;
-        syncWithSupabase(item).then(saved => { if (saved) { item.id = saved.id; saveData(); } });
-      });
-
-      if (count > 0) { saveData(); renderList(); }
-      return count;
+      localStorage.setItem("colis_data", JSON.stringify(colisList));
+      renderList();
     }
 
-    async function syncWithSupabase(item) {
-      const payload = {
-        no_bordereau: item.noBordereau, no_colis: item.noColis, exp: item.exp, dest: item.dest,
-        client_exp: item.clientExp, client_dest: item.clientDest, date_arrivee: item.dateArrivee,
-        chauffeur: item.chauffeur, vehicule: item.vehicule, is_livre: item.isLivre,
-        mon_livreur: item.monLivreur, date_livraison: item.dateLivraison || null,
-        heure_livraison: item.heureLivraison || null, montant: item.montant ? parseFloat(item.montant) : null,
-        mode_paiement: item.modePaiement
-      };
-      try {
-        if (item.id) {
-          const { data, error } = await sb.from("colis").update(payload).eq("id", item.id).select().single();
-          if (error) throw error; return data;
-        } else {
-          const { data, error } = await sb.from("colis").insert(payload).select().single();
-          if (error) throw error; return data;
-        }
-      } catch (e) { console.error(e); return null; }
+    function renderList() {
+      const tbody = document.getElementById("colisList");
+      tbody.innerHTML = colisList.map((c, i) => `<tr><td>${c.noBordereau}</td><td>${c.noColis}</td><td>${c.exp||''}</td><td>${c.dest||''}</td><td><button onclick="edit(${i})">Edit</button></td></tr>`).join('');
     }
 
-    function renderList(search = "") {
-      const tbody = document.getElementById("colisList"); tbody.innerHTML = "";
-      const s = search.toLowerCase().trim();
-      const filtered = colisList.filter(c => !s || c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s));
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:#aaa;">Aucun colis.</td></tr>`; return;
-      }
-      filtered.forEach((c, index) => {
-        const tr = document.createElement("tr");
-        const badgeLivre = c.isLivre ? `<span class="status-badge status-oui">OUI</span>` : `<span class="status-badge status-non">NON</span>`;
-        tr.innerHTML = `
-          <td>${c.noBordereau}</td><td><span class="code-highlight">${c.noColis}</span></td>
-          <td>${c.exp || "-"}</td><td>${c.dest || "-"}</td><td>${c.clientExp || "-"}</td><td>${c.clientDest || "-"}</td>
-          <td>${c.dateArrivee}</td><td>${c.chauffeur || "-"}</td><td>${c.vehicule || "-"}</td><td>${badgeLivre}</td>
-          <td>${c.monLivreur || "-"}</td><td>${c.isLivre ? c.dateLivraison + ' ' + c.heureLivraison : "-"}</td>
-          <td>${c.montant ? c.montant + ' Ar' : "-"}</td><td>${c.modePaiement || "-"}</td>
-          <td>
-            <button onclick="editColis(${index})" style="background:#ef6c00; color:#fff; border:none; padding:2px 5px; border-radius:3px;">Éditer</button>
-            <button onclick="deleteColis(${index})" style="background:#c62828; color:#fff; border:none; padding:2px 5px; border-radius:3px;">X</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.getElementById("colisForm").addEventListener("submit", async function(e) {
+    document.getElementById("colisForm").onsubmit = (e) => {
       e.preventDefault();
-      const idx = parseInt(document.getElementById("editIndex").value);
-      const item = {
-        id: idx >= 0 ? colisList[idx].id : undefined,
-        noBordereau: document.getElementById("noBordereau").value.trim().toUpperCase(),
-        noColis: document.getElementById("noColis").value.trim().toUpperCase(),
-        exp: document.getElementById("exp").value.trim().toUpperCase(),
-        dest: document.getElementById("dest").value.trim().toUpperCase(),
-        clientExp: document.getElementById("clientExp").value.trim().toUpperCase(),
-        clientDest: document.getElementById("clientDest").value.trim().toUpperCase(),
-        dateArrivee: document.getElementById("dateArrivee").value,
-        chauffeur: document.getElementById("chauffeur").value.trim().toUpperCase(),
-        vehicule: document.getElementById("vehicule").value.trim().toUpperCase(),
-        isLivre: document.getElementById("isLivre").checked,
-        monLivreur: document.getElementById("isLivre").checked ? document.getElementById("monLivreur").value.trim().toUpperCase() : "",
-        dateLivraison: document.getElementById("isLivre").checked ? document.getElementById("dateLivraison").value : "",
-        heureLivraison: document.getElementById("isLivre").checked ? document.getElementById("heureLivraison").value : "",
-        montant: document.getElementById("isLivre").checked ? document.getElementById("montant").value : "",
-        modePaiement: document.getElementById("isLivre").checked ? document.getElementById("modePaiement").value.trim().toUpperCase() : ""
-      };
+      // Sauvegarde logique ici...
+      renderList();
+    };
 
-      if (idx >= 0) colisList[idx] = item; else colisList.unshift(item);
-      saveData();
-      const saved = await syncWithSupabase(item);
-      if (saved && idx < 0) colisList[0].id = saved.id;
-      saveData(); clearFormManual(); renderList();
-    });
-
-    function clearFormManual() {
-      document.getElementById("colisForm").reset();
-      document.getElementById("editIndex").value = "-1";
-      document.getElementById("dateArrivee").value = new Date().toISOString().slice(0, 10);
-      toggleLivraisonFields();
-    }
-
-    function editColis(idx) {
-      document.getElementById("editIndex").value = idx; const c = colisList[idx];
-      document.getElementById("noBordereau").value = c.noBordereau;
-      document.getElementById("noColis").value = c.noColis;
-      document.getElementById("exp").value = c.exp || ""; document.getElementById("dest").value = c.dest || "";
-      document.getElementById("clientExp").value = c.clientExp || ""; document.getElementById("clientDest").value = c.clientDest || "";
-      document.getElementById("dateArrivee").value = c.dateArrivee;
-      document.getElementById("chauffeur").value = c.chauffeur || ""; document.getElementById("vehicule").value = c.vehicule || "";
-      document.getElementById("isLivre").checked = c.isLivre; toggleLivraisonFields();
-      if(c.isLivre) {
-        document.getElementById("monLivreur").value = c.monLivreur || ""; document.getElementById("dateLivraison").value = c.dateLivraison || "";
-        document.getElementById("heureLivraison").value = c.heureLivraison || ""; document.getElementById("montant").value = c.montant || "";
-        document.getElementById("modePaiement").value = c.modePaiement || "";
-      }
-    }
-
-    function deleteColis(idx) {
-      if (!confirm("Supprimer ce colis ?")) return;
-      if (colisList[idx].id) sb.from("colis").delete().eq("id", colisList[idx].id);
-      colisList.splice(idx, 1); saveData(); renderList();
-    }
-
-    document.getElementById("searchInput").addEventListener("input", function() { renderList(this.value); });
-    window.addEventListener("DOMContentLoaded", () => { clearFormManual(); renderList(); });
+    renderList();
   </script>
 </body>
 </html>
