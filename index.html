@@ -3,127 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOMENA SERVICE</title>
+  <title>NOMENA SERVICE - ULTRA SIMPLE</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     * { box-sizing: border-box; }
-    html, body { width: 100%; max-width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
-    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; overflow-y: hidden; padding: 6px; }
-    header { text-align: center; margin-bottom: 5px; }
-    header h1 { margin: 0; color: #4fc3f7; font-size: 1.3em; text-transform: uppercase; }
-    .backup-box { max-width: 100%; margin: 0 auto 6px; padding: 5px 6px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .backup-box input[type="file"] { width: auto; color: #f0f0f0; max-width: 100%; }
-    .btn-export { background: #7b1fa2; }
-    .btn-import { background: #ef6c00; }
-    .btn-scan { background: #e91e63; font-size: 0.85em; padding: 8px 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; }
-    .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 100px); align-items: stretch; overflow: hidden; }
-    .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .form-column { flex: 0 0 260px; width: 260px; max-width: 260px; overflow: auto; }
-    .list-column { flex: 1 1 auto; min-width: 0; overflow: hidden; }
-    h2 { margin: 0 0 5px; text-align: center; text-transform: uppercase; font-size: 0.98em; }
-    .title-red { color: #f44336; }
-    .search-zone { margin-bottom: 5px; }
-    #searchInput, input, select, textarea { width: calc(100% - 62px); padding: 2px 4px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.7em; display: inline-block; max-width: 100%; min-width: 0; }
-    label { display: inline-block; width: 58px; margin-top: 2px; vertical-align: top; text-transform: uppercase; font-size: 0.6em; }
-    textarea { height: 22px; resize: none; }
-    button { padding: 3px 5px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.66em; text-transform: uppercase; margin-top: 3px; }
-    button:hover { background: #66bb6a; color: #000; }
-    .scan-buttons { margin-top: 4px; margin-bottom: 8px; width: 100%; }
-    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; background: #2a2a2a; padding: 5px; border: 1px solid #444; border-radius: 6px; flex: 0 0 auto; }
-    #filterStatus { padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; max-width: 100%; font-size: 0.78em; }
-    .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; max-width: 100%; }
-    table { min-width: 1200px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
-    th, td { padding: 3px 4px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
-    th:nth-child(1), td:nth-child(1) { width: 170px; max-width: 170px; } /* N° CO */
-    th:nth-child(2), td:nth-child(2) { width: 130px; max-width: 130px; } /* N° BC */
-    th:nth-child(3), td:nth-child(3) { width: 120px; max-width: 120px; } /* CLIENT */
-    th:nth-child(4), td:nth-child(4) { width: 150px; max-width: 150px; } /* ADRESSE */
-    th:nth-child(5), td:nth-child(5) { width: 70px; max-width: 70px; }   /* VILLE OR */
-    th:nth-child(6), td:nth-child(6) { width: 70px; max-width: 70px; }   /* VILLE DEST */
-    th:nth-child(7), td:nth-child(7) { width: 80px; max-width: 80px; }   /* DATE ARR */
-    th:nth-child(8), td:nth-child(8) { width: 75px; max-width: 75px; }   /* STATUT */
-    th:nth-child(9), td:nth-child(9) { width: 120px; max-width: 120px; }  /* ACTIONS */
-    th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; margin: 0; padding: 10px; }
+    header { text-align: center; margin-bottom: 10px; }
+    header h1 { margin: 0; color: #4fc3f7; font-size: 1.4em; text-transform: uppercase; }
+    
+    .btn-scan { background: #e91e63; font-size: 1em; padding: 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
+    
+    .container { display: flex; gap: 10px; height: calc(100vh - 120px); }
+    .form-column { flex: 0 0 280px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 10px; overflow-y: auto; }
+    .list-column { flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; }
+    
+    label { display: block; margin-top: 8px; text-transform: uppercase; font-size: 0.75em; color: #aaa; }
+    input, select { width: 100%; padding: 6px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.85em; margin-top: 2px; }
+    button[type="submit"] { width: 100%; padding: 8px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; text-transform: uppercase; margin-top: 12px; }
+    
+    .table-wrapper { flex: 1; overflow: auto; border: 1px solid #444; border-radius: 4px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+    th, td { padding: 6px; border: 1px solid #444; text-align: left; text-transform: uppercase; }
+    th { background: #333; color: #ddd; position: sticky; top: 0; }
     tr:nth-child(even) { background: #262626; }
-    tr.row-selected { background: #4fc3f7 !important; color: #000 !important; }
-    tr.row-selected td { color: #000 !important; }
-    .no-colis { display: inline-block; white-space: nowrap; font-weight: 700; color: #4fc3f7; }
-    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; border-radius: 9999px; font-weight: 700; font-size: 0.7em; text-transform: uppercase; }
-    .badge-violet { background: #9c27b0; color: #fff; }
-    .badge-green { background: #4caf50; color: #fff; }
-    .badge-blue { background: #2196f3; color: #fff; }
-    .badge-orange { background: #ff9800; color: #fff; }
-    .badge-gray { background: #9e9e9e; color: #fff; }
+    .no-colis { color: #4fc3f7; font-weight: bold; }
     
     /* MODAL CAMERA */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
     #cameraModal.active { display: block; }
     #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
     .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: rgba(211, 47, 47, 0.85); color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; cursor: pointer; border: none; }
+    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: #d32f2f; color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; cursor: pointer; border: none; }
     
-    .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 3001; text-align: center; }
+    .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: #fff; padding: 20px; border-radius: 10px; z-index: 3001; text-align: center; border: 1px solid #e91e63; }
     .ocr-loading.active { display: block; }
-    .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+    .ocr-loading .spin { display: inline-block; width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
   <header><h1>NOMENA SERVICE</h1></header>
 
-  <div class="backup-box">
-    <button type="button" class="btn-export" onclick="exportBackup()">Exporter JSON</button>
-    <input type="file" id="importFile" accept=".json">
-    <button type="button" class="btn-import" onclick="importBackup()">Importer JSON</button>
-  </div>
-
   <div class="container">
-    <div class="form-column" id="formColumn">
-      <h2><span class="title-red">SAISIE COLIS</span> 📦</h2>
+    <div class="form-column">
+      <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE</button>
       
-      <div class="search-zone">
-        <input type="text" id="searchInput" placeholder="Rechercher...">
-      </div>
-
-      <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER LA FEUILLE DE ROUTE</button>
-      </div>
-
       <form id="colisForm">
-        <label>N° CO</label><input type="text" id="noColis" required>
-        <label>N° BC</label><input type="text" id="noBordereau" required>
-        <label>CLIENT</label><input type="text" id="client" required placeholder="Ex: YAS MOBILE">
-        <label>ADRESSE</label><textarea id="adresse" rows="1" required placeholder="Ex: AGENCE BTP"></textarea>
-        <label>VILLE OR</label><input type="text" id="villeOrigine" placeholder="Ex: RA3">
-        <label>VILLE DEST</label><input type="text" id="villeDestination" placeholder="Ex: BTP">
-        <label>DATE ARR</label><input type="date" id="dateArrivee" required>
+        <input type="hidden" id="editIndex" value="-1">
+        <label>N° COLIS (CO)</label>
+        <input type="text" id="noColis" required>
+        
+        <label>N° BORDEREAU (AR)</label>
+        <input type="text" id="noBordereau" required>
+        
         <label>STATUT</label>
         <select id="statutLivraison">
           <option value="Reçu">Reçu</option>
           <option value="En cours">En cours</option>
           <option value="Livré">Livré</option>
         </select>
+        
         <button type="submit">Enregistrer</button>
       </form>
     </div>
 
     <div class="list-column">
-      <div class="list-header">
-        <h2>Suivi des Enregistrements</h2>
-        <select id="filterStatus">
-          <option value="all">Tous</option>
-          <option value="Reçu">Reçu</option>
-          <option value="En cours">En cours</option>
-          <option value="Livré">Livré</option>
-        </select>
-      </div>
+      <h3 style="margin: 0; font-size: 1em; text-transform: uppercase; color: #4fc3f7;">Liste des Colis</h3>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>N° CO</th><th>N° BC</th><th>CLIENT</th><th>ADRESSE</th><th>VILLE OR</th><th>VILLE DEST</th><th>DATE ARR</th><th>STATUT</th><th>AC</th>
+              <th>N° COLIS</th>
+              <th>N° BORDEREAU</th>
+              <th>STATUT</th>
+              <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody id="colisList"></tbody>
@@ -135,14 +89,13 @@
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas" style="display:none;"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE</button>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 CAPTURER ET LIRE LES CODES</button>
     <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Lecture intelligente en cours...</p>
-    <p style="font-size:0.8em; color:#aaa;">Détection souple des formats AR et CO...</p>
+    <p>Extraction unique des N° BC et N° COLIS...</p>
   </div>
 
   <script>
@@ -153,34 +106,41 @@
 
     const OCRSPACE_API_KEY = "helloworld"; 
 
-    let colisList = JSON.parse(localStorage.getItem("colis")) || [];
-    let editingIndex = -1;
-    let selectedIndex = -1;
+    let localColis = JSON.parse(localStorage.getItem("colis_simple")) || [];
     let videoStream = null;
 
-    function normalize(v) { return (v || "").toString().trim().toUpperCase(); }
-    function saveData() { localStorage.setItem("colis", JSON.stringify(colisList)); }
-    
-    function renderNoColis(v) { return `<span class="no-colis">${v}</span>`; }
-    function renderVilleOR(v) { return `<span class="badge badge-green">${v}</span>`; }
-    function renderVilleDEST(v) { return `<span class="badge badge-violet">${v}</span>`; }
-    function renderStatut(v) { 
-      const s = normalize(v); 
-      if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">Reçu</span>`; 
-      if (s === "EN COURS") return `<span class="badge badge-orange">En cours</span>`; 
-      if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">Livré</span>`; 
-      return `<span class="badge badge-gray">${v}</span>`; 
+    function renderList() {
+      const tbody = document.getElementById("colisList");
+      tbody.innerHTML = "";
+      
+      if (localColis.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa;">Aucun colis. Scannez une feuille.</td></tr>`;
+        return;
+      }
+
+      localColis.forEach((c, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="no-colis">${c.noColis}</span></td>
+          <td>${c.noBordereau}</td>
+          <td>${c.statutLivraison}</td>
+          <td>
+            <button onclick="editColis(${index})" style="background:#ef6c00; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;">Éditer</button>
+            <button onclick="deleteColis(${index})" style="background:#c62828; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;">Suppr</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function openCamera() {
-      const modal = document.getElementById('cameraModal');
-      modal.classList.add('active');
+      document.getElementById('cameraModal').classList.add('active');
       navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
       }).then(stream => {
         videoStream = stream;
         document.getElementById('cameraVideo').srcObject = stream;
-      }).catch(err => { alert('Caméra inaccessible: ' + err.message); closeCamera(); });
+      }).catch(err => { alert('Erreur caméra: ' + err.message); closeCamera(); });
     }
 
     function capturePhoto() {
@@ -190,9 +150,9 @@
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const base64 = canvas.toDataURL('image/jpeg', 0.9);
       closeCamera();
-      performSmartOCR(imageDataUrl);
+      sendToOCR(base64);
     }
 
     function closeCamera() {
@@ -200,209 +160,124 @@
       if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     }
 
-    async function performSmartOCR(imageDataUrl) {
+    async function sendToOCR(base64Data) {
       document.getElementById('ocrLoading').classList.add('active');
       try {
         const formData = new FormData();
-        formData.append('base64Image', imageDataUrl);
+        formData.append('base64Image', base64Data);
         formData.append('apikey', OCRSPACE_API_KEY);
         formData.append('language', 'fre');
-        formData.append('OCREngine', '2'); 
-        
+        formData.append('OCREngine', '2');
+
         const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
         const json = await res.json();
-        
-        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error('Document non détecté.');
-        
-        const text = json.ParsedResults[0].ParsedText;
-        const total = processSelectedFields(text);
-        
+
+        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error("Impossible de lire l'image.");
+
+        const fullText = json.ParsedResults[0].ParsedText;
+        const count = extractOnlyCodes(fullText);
+
         document.getElementById('ocrLoading').classList.remove('active');
-        if (total > 0) alert(`✔ Réussi ! ${total} lignes intégrées.`);
-        else alert(`Aucun colis détecté. Essayez de rapprocher l'appareil ou d'améliorer l'éclairage.`);
+        if (count > 0) alert(`✔ Réussi ! ${count} colis enregistrés.`);
+        else alert("Aucun code trouvé. Assurez-vous que les codes CO et AR soient bien visibles et droits.");
       } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('Erreur de lecture : ' + err.message);
+        alert("Erreur de scan : " + err.message);
       }
     }
 
-    // === ANALYSEUR SOUPLE RE-PARAMÉTRÉ ===
-    function processSelectedFields(text) {
-      const lines = text.split('\n');
-      const today = new Date().toISOString().slice(0, 10);
-      let count = 0;
-
-      for (let line of lines) {
-        line = line.trim();
-        const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
-        
-        // RECHERCHE SOUPLE : On cherche juste si ça contient la racine, peu importe la longueur exacte
-        let noCo = parts.find(p => p.includes("CO") && p.length >= 10);
-        let noBc = parts.find(p => p.includes("AR") && p.length >= 10);
-
-        if (noCo) {
-          if (!noBc) noBc = "AR2605RA"; // Sécurité si le BC est mal scanné
-
-          // Extraction des mots pour les villes et clients
-          let cleanWords = parts.filter(p => p.length >= 3 && !p.includes("CO") && !p.includes("AR") && !p.includes("/"));
-          
-          let expAsVilleOr = cleanWords[0] || "RA3";
-          let destAsVilleDest = cleanWords[1] || "BTP";
-          
-          let client = "CONTRAT";
-          let adresse = "DISTRIBUTION";
-
-          // Identification automatique des clients fréquents
-          if (line.toUpperCase().includes("YAS")) {
-            client = "YAS MOBILE";
-            adresse = "AGENCE BTP";
-          } else if (line.toUpperCase().includes("BNI")) {
-            client = "BNI COLIS";
-            adresse = "BANQUE BNI";
-          } else if (line.toUpperCase().includes("BOA")) {
-            client = "BOA COURRIER";
-            adresse = "AGENCE BOA";
-          } else if (line.toUpperCase().includes("AMPR")) {
-            client = "AMPR MADAGASCAR";
-            adresse = "AMPR DIRECTION";
-          } else if (cleanWords.length > 3) {
-            client = cleanWords[cleanWords.length - 2];
-            adresse = cleanWords[cleanWords.length - 1];
-          }
-
-          const newColis = {
-            noColis: noCo,
-            noBordereau: noBc,
-            client: client,
-            adresse: adresse,
-            villeOrigine: expAsVilleOr,
-            villeDestination: destAsVilleDest,
-            dateArrivee: today,
-            statutLivraison: "Reçu"
-          };
-
-          colisList.unshift(newColis);
-          count++;
-
-          // Envoi direct vers Supabase
-          saveToSupabase(newColis).then(res => { if(res) { newColis.id = res.id; saveData(); } });
-        }
-      }
-      if (count > 0) { saveData(); renderList(); }
-      return count;
-    }
-
-    function renderList(filter = "all", search = "") {
-      const tbody = document.getElementById("colisList");
-      tbody.innerHTML = "";
-      const s = search.toLowerCase().trim();
+    // === RECHERCHE BRUTE ET ASSOCIEE DES CODES CO ET AR ===
+    function extractOnlyCodes(text) {
+      const words = text.split(/[\s,;\n\r]+/).map(w => w.trim().toUpperCase());
       
-      const filtered = colisList.map((c, index) => ({ c, index })).filter(item => {
-        const c = item.c;
-        const matchFilter = filter === "all" || normalize(c.statutLivraison) === normalize(filter);
-        if (!s) return matchFilter;
-        return matchFilter && (c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s) || c.client.toLowerCase().includes(s) || c.adresse.toLowerCase().includes(s));
+      // On isole tous les mots qui contiennent CO ou AR
+      let listCO = words.filter(w => w.includes("CO") && w.length >= 8);
+      let listAR = words.filter(w => w.includes("AR") && w.length >= 8);
+
+      let inserted = 0;
+
+      // On crée une entrée pour chaque numéro de colis trouvé
+      listCO.forEach((coCode, index) => {
+        // On prend le BC correspondant dans la liste, ou la racine par défaut si absent
+        let bcCode = listAR[index] || "AR2605RA";
+
+        const item = {
+          noColis: coCode,
+          noBordereau: bcCode,
+          statutLivraison: "Reçu"
+        };
+
+        localColis.unshift(item);
+        inserted++;
+
+        // Envoi direct vers ta table Supabase
+        syncWithSupabase(item).then(saved => { if (saved) { item.id = saved.id; localStorage.setItem("colis_simple", JSON.stringify(localColis)); } });
       });
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="color:#aaa; text-align:center;">Aucun colis enregistré.</td></tr>`;
-        return;
+      if (inserted > 0) {
+        localStorage.setItem("colis_simple", JSON.stringify(localColis));
+        renderList();
       }
-
-      filtered.forEach(item => {
-        const c = item.c, index = item.index;
-        const tr = document.createElement("tr");
-        if (index === selectedIndex) tr.className = "row-selected";
-        
-        tr.innerHTML = `
-          <td>${renderNoColis(c.noColis)}</td>
-          <td>${c.noBordereau}</td>
-          <td>${c.client}</td>
-          <td title="${c.adresse}">${c.adresse}</td>
-          <td>${renderVilleOR(c.villeOrigine)}</td>
-          <td>${renderVilleDEST(c.villeDestination)}</td>
-          <td>${c.dateArrivee}</td>
-          <td>${renderStatut(c.statutLivraison)}</td>
-          <td>
-            <button type="button" onclick="editColis(${index})">Éditer</button>
-            <button type="button" onclick="deleteColis(${index})">Suppr</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
+      return inserted;
     }
 
-    async function saveToSupabase(local) {
+    async function syncWithSupabase(item) {
       const payload = {
-        no_colis: local.noColis,
-        no_bordereau: local.noBordereau,
-        client: local.client,
-        adresse: local.adresse,
-        ville_origine: local.villeOrigine,
-        ville_destination: local.villeDestination,
-        date_arrivee: local.dateArrivee,
-        statut_livraison: local.statutLivraison
+        no_colis: item.noColis,
+        no_bordereau: item.noBordereau,
+        statut_livraison: item.statutLivraison
       };
       try {
-        if (local.id) {
-          const { data, error } = await sb.from("colis").update(payload).eq("id", local.id).select().single();
+        if (item.id) {
+          const { data, error } = await sb.from("colis").update(payload).eq("id", item.id).select().single();
           if (error) throw error; return data;
         } else {
           const { data, error } = await sb.from("colis").insert(payload).select().single();
           if (error) throw error; return data;
         }
-      } catch (e) { console.error(e); return null; }
+      } catch (e) { console.error("Erreur Supabase:", e); return null; }
     }
 
+    // FORMULAIRE MANUEL
     document.getElementById("colisForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+      const idx = parseInt(document.getElementById("editIndex").value);
+      
       const item = {
-        id: editingIndex >= 0 ? colisList[editingIndex].id : undefined,
-        noColis: document.getElementById("noColis").value,
-        noBordereau: document.getElementById("noBordereau").value,
-        client: document.getElementById("client").value,
-        adresse: document.getElementById("adresse").value,
-        villeOrigine: document.getElementById("villeOrigine").value,
-        villeDestination: document.getElementById("villeDestination").value,
-        dateArrivee: document.getElementById("dateArrivee").value,
+        id: idx >= 0 ? localColis[idx].id : undefined,
+        noColis: document.getElementById("noColis").value.trim().toUpperCase(),
+        noBordereau: document.getElementById("noBordereau").value.trim().toUpperCase(),
         statutLivraison: document.getElementById("statutLivraison").value
       };
 
-      if (editingIndex >= 0) colisList[editingIndex] = item; else colisList.unshift(item);
-      saveData();
+      if (idx >= 0) localColis[idx] = item; else localColis.unshift(item);
+      localStorage.setItem("colis_simple", JSON.stringify(localColis));
 
-      const res = await saveToSupabase(item);
-      if (res && editingIndex < 0) colisList[0].id = res.id;
-      saveData();
+      const saved = await syncWithSupabase(item);
+      if (saved && idx < 0) localColis[0].id = saved.id;
+      localStorage.setItem("colis_simple", JSON.stringify(localColis));
 
-      editingIndex = -1; selectedIndex = -1;
+      document.getElementById("editIndex").value = "-1";
       this.reset();
       renderList();
     });
 
     function editColis(idx) {
-      editingIndex = idx; selectedIndex = idx;
-      const c = colisList[idx];
-      document.getElementById("noColis").value = c.noColis;
-      document.getElementById("noBordereau").value = c.noBordereau;
-      document.getElementById("client").value = c.client;
-      document.getElementById("adresse").value = c.adresse;
-      document.getElementById("villeOrigine").value = c.villeOrigine;
-      document.getElementById("villeDestination").value = c.villeDestination;
-      document.getElementById("dateArrivee").value = c.dateArrivee;
-      document.getElementById("statutLivraison").value = c.statutLivraison;
-      renderList();
+      document.getElementById("editIndex").value = idx;
+      document.getElementById("noColis").value = localColis[idx].noColis;
+      document.getElementById("noBordereau").value = localColis[idx].noBordereau;
+      document.getElementById("statutLivraison").value = localColis[idx].statutLivraison;
     }
 
     function deleteColis(idx) {
-      if(!confirm("Supprimer ce colis ?")) return;
-      if(colisList[idx].id) sb.from("colis").delete().eq("id", colisList[idx].id);
-      colisList.splice(idx, 1); saveData(); renderList();
+      if (!confirm("Supprimer ce colis ?")) return;
+      if (localColis[idx].id) sb.from("colis").delete().eq("id", localColis[idx].id);
+      localColis.splice(idx, 1);
+      localStorage.setItem("colis_simple", JSON.stringify(localColis));
+      renderList();
     }
 
-    function exportBackup() { const blob = new Blob([JSON.stringify(colisList, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup.json`; a.click(); }
-    document.getElementById("filterStatus").addEventListener("change", function() { renderList(this.value, document.getElementById("searchInput").value); });
-    document.getElementById("searchInput").addEventListener("input", function() { renderList(document.getElementById("filterStatus").value, this.value); });
-    window.addEventListener("DOMContentLoaded", () => renderList());
+    window.addEventListener("DOMContentLoaded", renderList);
   </script>
 </body>
 </html>
