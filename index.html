@@ -2,62 +2,75 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOMENA MOBILE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOMENA - GESTION COMPLÈTE</title>
     <script src='https://unpkg.com/tesseract.js@v2.1.4/dist/tesseract.min.js'></script>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; }
-        .box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 100%; box-sizing: border-box; }
-        label { display: block; font-size: 1.2em; margin: 15px 0 5px; color: #4fc3f7; }
-        input { width: 100%; padding: 15px; font-size: 1.2em; background: #333; border: 1px solid #555; color: #fff; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 20px; font-size: 1.2em; background: #e91e63; color: white; border: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
-        #status { text-align: center; margin: 15px 0; color: #ffeb3b; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 10px; }
+        .view { display: none; }
+        .active { display: block; }
+        .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        button { padding: 15px; border-radius: 5px; border: none; background: #333; color: white; flex: 1; }
+        .btn-active { background: #e91e63; }
+        input { width: 100%; padding: 10px; margin: 5px 0; background: #222; color: #fff; border: 1px solid #444; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8em; }
+        th, td { border: 1px solid #444; padding: 5px; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2 style="text-align:center;">SCANNER COLIS</h2>
-    <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
-    <button onclick="document.getElementById('camera').click()">📷 SCANNER LA LIGNE</button>
-    <div id="status">En attente de scan...</div>
+<div class="nav-bar">
+    <button id="btn1" class="btn-active" onclick="show('scan')">SCANNER</button>
+    <button id="btn2" onclick="show('tableau')">TABLEAU</button>
+</div>
 
-    <label>N° BC (AR)</label>
-    <input type="text" id="bc" placeholder="AR...">
-    
-    <label>N° COLIS (CO)</label>
-    <input type="text" id="co" placeholder="CO...">
+<!-- ZONE SCAN -->
+<div id="scan" class="view active">
+    <button style="width:100%; background:#e91e63;" onclick="document.getElementById('camera').click()">📷 LANCER SCAN</button>
+    <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
+    <label>AR</label><input type="text" id="bc">
+    <label>CO</label><input type="text" id="co">
+    <button onclick="save()">ENREGISTRER</button>
+    <p id="status"></p>
+</div>
+
+<!-- ZONE TABLEAU -->
+<div id="tableau" class="view">
+    <table>
+        <thead><tr><th>AR/CO</th><th>STATUT</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
 </div>
 
 <script>
-    document.getElementById('camera').addEventListener('change', async (e) => {
-        const status = document.getElementById('status');
-        const file = e.target.files[0];
-        if(!file) return;
+    let list = JSON.parse(localStorage.getItem('colis_data')) || [];
 
-        status.innerText = "Analyse en cours... garde le téléphone stable...";
-        
-        Tesseract.recognize(file, 'fra').then(({ data: { text } }) => {
-            console.log("Texte trouvé :", text); // Pour déboguer
-            
-            // Extraction plus large
-            const bcMatch = text.match(/AR\w+/i);
-            const coMatch = text.match(/CO\w+/i);
-            
-            if (bcMatch) {
-                document.getElementById('bc').value = bcMatch[0].toUpperCase();
-            }
-            if (coMatch) {
-                document.getElementById('co').value = coMatch[0].toUpperCase();
-            }
-            
-            if (!bcMatch && !coMatch) {
-                status.innerText = "Codes non trouvés. Essaie de scanner plus près.";
-            } else {
-                status.innerText = "Scan réussi !";
-            }
+    function show(v) {
+        document.querySelectorAll('.view').forEach(d => d.style.display = 'none');
+        document.getElementById(v).style.display = 'block';
+        document.getElementById('btn1').className = (v=='scan') ? 'btn-active' : '';
+        document.getElementById('btn2').className = (v=='tableau') ? 'btn-active' : '';
+        if(v=='tableau') render();
+    }
+
+    document.getElementById('camera').addEventListener('change', async (e) => {
+        document.getElementById('status').innerText = "Analyse...";
+        Tesseract.recognize(e.target.files[0], 'fra').then(({ data: { text } }) => {
+            document.getElementById('bc').value = (text.match(/AR\w+/i) || [''])[0];
+            document.getElementById('co').value = (text.match(/CO\w+/i) || [''])[0];
+            document.getElementById('status').innerText = "Terminé !";
         });
     });
+
+    function save() {
+        list.push({bc: document.getElementById('bc').value, co: document.getElementById('co').value});
+        localStorage.setItem('colis_data', JSON.stringify(list));
+        alert("Enregistré !");
+    }
+
+    function render() {
+        document.getElementById('tableBody').innerHTML = list.map(c => `<tr><td>${c.bc}/${c.co}</td><td>En attente</td></tr>`).join('');
+    }
 </script>
 </body>
 </html>
