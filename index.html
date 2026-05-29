@@ -235,7 +235,7 @@
     const { createClient } = supabase;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // Clé API FREE OCR.space (Remplacez par votre clé si besoin)
+    // Clé API FREE OCR.space (Tu peux mettre la tienne ici si besoin)
     const OCRSPACE_API_KEY = "helloworld"; 
 
     let colisList = JSON.parse(localStorage.getItem("colis")) || [];
@@ -300,9 +300,10 @@
       try {
         const formData = new FormData();
         formData.append('base64Image', imageDataUrl);
-        formData.append('apikey', OCRSPACE_API_KEY); // Changement ici pour utiliser la bonne variable
-        formData.append('language', 'fra');
+        formData.append('apikey', OCRSPACE_API_KEY);
+        formData.append('language', 'fre'); // CORRECTION ICI : 'fre' au lieu de 'fra' pour éviter l'erreur E201
         formData.append('isOverlayRequired', 'false');
+        formData.append('OCREngine', '2'); // Utilise le moteur v2 beaucoup plus rapide et précis
         
         const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
           method: 'POST',
@@ -312,7 +313,7 @@
         const ocrResult = await ocrResponse.json();
         
         if (ocrResult.IsErroredInProcessing || !ocrResult.ParsedResults || ocrResult.ParsedResults.length === 0) {
-          throw new Error(ocrResult.ErrorMessage || 'Erreur OCR');
+          throw new Error(ocrResult.ErrorMessage || 'Erreur lors du traitement OCR.');
         }
         
         const extractedText = ocrResult.ParsedResults[0].ParsedText;
@@ -321,12 +322,12 @@
         fillFormFromOCR(extractedData);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('✔ OCR terminé !\n\n8 champs remplis automatiquement.');
+        alert('✔ OCR terminé !\n\nChamps détectés remplis automatiquement.');
         
       } catch (error) {
         document.getElementById('ocrLoading').classList.remove('active');
         console.error('Erreur OCR:', error);
-        alert('❌ Erreur OCR: ' + error.message + '\n\nEssaie de reprendre la photo plus clairement.');
+        alert('❌ Erreur: ' + error.message);
       }
     }
 
@@ -373,7 +374,7 @@
       document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // === FONCTIONS LOGISTIQUE BASIQUES ===
+    // === FONCTIONS BACKUP ET BASE DE DONNÉES LOCALES ===
     function exportBackup() {
       const data = JSON.stringify(colisList, null, 2);
       const blob = new Blob([data], { type: "application/json" });
@@ -381,7 +382,7 @@
       const a = document.createElement("a");
       const now = new Date();
       a.href = url;
-      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}_.json`;
+      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}.json`;
       a.click();
     }
 
@@ -396,7 +397,7 @@
           colisList = imported;
           saveData();
           renderList();
-        } catch(err) { alert("Erreur import"); }
+        } catch(err) { alert("Erreur lors de l'importation."); }
       };
       reader.readAsText(file);
     }
@@ -521,7 +522,7 @@
       fillForm(index);
     }
 
-    // === RE-CONSTRUCTION ET CORRECTION COMPLÈTE DE SUPABASE ===
+    // === ENREGISTREMENT SUPABASE CORRIGÉ ===
     async function saveToSupabase(localColis) {
       const payload = {
         id: localColis.id || undefined,
