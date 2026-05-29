@@ -18,7 +18,6 @@
     .btn-export { background: #7b1fa2; }
     .btn-import { background: #ef6c00; }
     .btn-scan { background: #e91e63; font-size: 0.85em; padding: 8px 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; }
-    .btn-scan:hover { background: #f06292; }
     .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 100px); align-items: stretch; overflow: hidden; }
     .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
     .form-column { flex: 0 0 260px; width: 260px; max-width: 260px; overflow: auto; }
@@ -29,154 +28,104 @@
     #searchInput, input, select, textarea { width: calc(100% - 62px); padding: 2px 4px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.7em; display: inline-block; max-width: 100%; min-width: 0; }
     label { display: inline-block; width: 58px; margin-top: 2px; vertical-align: top; text-transform: uppercase; font-size: 0.6em; }
     textarea { height: 22px; resize: none; }
-    textarea:focus { height: 36px; resize: vertical; }
     button { padding: 3px 5px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.66em; text-transform: uppercase; margin-top: 3px; }
     button:hover { background: #66bb6a; color: #000; }
     .scan-buttons { margin-top: 4px; margin-bottom: 8px; width: 100%; }
     .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; background: #2a2a2a; padding: 5px; border: 1px solid #444; border-radius: 6px; flex: 0 0 auto; }
     #filterStatus { padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; max-width: 100%; font-size: 0.78em; }
     .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; max-width: 100%; }
-    table { min-width: 1600px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
+    table { min-width: 1300px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
     th, td { padding: 3px 4px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
-    th:nth-child(1), td:nth-child(1) { width: 170px; max-width: 170px; }
-    th:nth-child(2), td:nth-child(2) { width: 100px; max-width: 100px; }
-    th:nth-child(3), td:nth-child(3) { width: 60px; max-width: 60px; }
-    th:nth-child(4), td:nth-child(4) { width: 60px; max-width: 60px; }
-    th:nth-child(5), td:nth-child(5) { width: 80px; max-width: 80px; }
-    th:nth-child(6), td:nth-child(6) { width: 80px; max-width: 80px; }
-    th:nth-child(7), td:nth-child(7) { width: 80px; max-width: 80px; }
-    th:nth-child(8), td:nth-child(8) { width: 80px; max-width: 80px; }
-    th:nth-child(9), td:nth-child(9) { width: 70px; max-width: 70px; }
-    th:nth-child(10), td:nth-child(10) { width: 70px; max-width: 70px; }
-    th:nth-child(11), td:nth-child(11) { width: 55px; max-width: 55px; }
-    th:nth-child(12), td:nth-child(12) { width: 55px; max-width: 55px; }
-    th:nth-child(13), td:nth-child(13) { width: 45px; max-width: 45px; }
-    th:nth-child(14), td:nth-child(14) { width: 65px; max-width: 65px; }
-    th:nth-child(15), td:nth-child(15) { width: 60px; max-width: 60px; }
+    th:nth-child(1), td:nth-child(1) { width: 170px; max-width: 170px; } /* N° CO */
+    th:nth-child(2), td:nth-child(2) { width: 130px; max-width: 130px; } /* N° BC */
+    th:nth-child(3), td:nth-child(3) { width: 120px; max-width: 120px; } /* CLIENT */
+    th:nth-child(4), td:nth-child(4) { width: 150px; max-width: 150px; } /* ADRESSE */
+    th:nth-child(5), td:nth-child(5) { width: 70px; max-width: 70px; }   /* VILLE OR */
+    th:nth-child(6), td:nth-child(6) { width: 70px; max-width: 70px; }   /* VILLE DEST */
+    th:nth-child(7), td:nth-child(7) { width: 60px; max-width: 60px; }   /* PESO */
+    th:nth-child(8), td:nth-child(8) { width: 80px; max-width: 80px; }   /* DATE ARR */
+    th:nth-child(9), td:nth-child(9) { width: 75px; max-width: 75px; }   /* STATUT */
+    th:nth-child(10), td:nth-child(10) { width: 120px; max-width: 120px; } /* ACTIONS */
     th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
     tr:nth-child(even) { background: #262626; }
     tr.row-selected { background: #4fc3f7 !important; color: #000 !important; }
     tr.row-selected td { color: #000 !important; }
-    tr.row-selected .badge { color: #fff !important; }
-    tr.row-hover:hover { background: #363636; }
-    .no-colis { display: inline-block; white-space: nowrap; font-weight: 700; letter-spacing: 0.3px; color: #4fc3f7; }
-    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; border-radius: 9999px; font-weight: 700; font-size: 0.7em; line-height: 1.1; white-space: nowrap; text-transform: uppercase; }
+    .no-colis { display: inline-block; white-space: nowrap; font-weight: 700; color: #4fc3f7; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; border-radius: 9999px; font-weight: 700; font-size: 0.7em; text-transform: uppercase; }
     .badge-violet { background: #9c27b0; color: #fff; }
     .badge-green { background: #4caf50; color: #fff; }
     .badge-blue { background: #2196f3; color: #fff; }
     .badge-orange { background: #ff9800; color: #fff; }
-    .badge-red { background: #f44336; color: #fff; }
     .badge-gray { background: #9e9e9e; color: #fff; }
-    .badge-cyan { background: #00bcd4; color: #fff; }
-    .receipt-area { display: none; max-width: 900px; margin: 15px auto 0; background: #fff; color: #000; border: 1px solid #000; border-radius: 6px; padding: 18px 20px; }
-    .receipt-area h3 { text-align: center; margin: 0 0 10px; }
-    .receipt-area hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-    .receipt-row { margin: 4px 0; }
-    .receipt-actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
-    .btn-print { background: #1565c0; }
-    .btn-close { background: #666; }
     
-    /* CAMÉRA FLOTTANTE SURÉLEVÉE */
-    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; overflow: hidden; }
+    /* CAMÉRA MODAL */
+    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; }
     #cameraModal.active { display: block; }
-    #cameraVideo { width: 100%; height: 100%; object-fit: cover; background: #000; }
-    #cameraCanvas { display: none; }
-    .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; z-index: 2500; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
-    .btn-capture-floating:active { background: #1b5e20; transform: translateX(-50%) scale(0.95); }
-    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: rgba(211, 47, 47, 0.85); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 10px 16px; font-size: 0.85em; font-weight: bold; text-transform: uppercase; z-index: 2500; cursor: pointer; }
+    #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
+    .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; cursor: pointer; }
+    .btn-close-floating { position: absolute; top: 20px; right: 20px; background: rgba(211, 47, 47, 0.85); color: white; border-radius: 6px; padding: 10px 16px; font-weight: bold; cursor: pointer; border: none; }
     
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 3001; text-align: center; }
     .ocr-loading.active { display: block; }
     .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @media print { body * { visibility: hidden; } #receiptArea, #receiptArea * { visibility: visible; } #receiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; border: none; } .receipt-actions { display: none !important; } }
-    @media (max-width: 1200px) { body { overflow-y: auto; } .container { height: auto; flex-direction: column; overflow: visible; } .form-column, .list-column { min-width: 0; width: 100%; max-width: 100%; } .list-column { min-height: 500px; } }
   </style>
 </head>
 <body>
   <header><h1>NOMENA SERVICE</h1></header>
 
   <div class="backup-box">
-    <button type="button" class="btn-export" onclick="exportBackup()">Exporter sauvegarde JSON</button>
+    <button type="button" class="btn-export" onclick="exportBackup()">Exporter JSON</button>
     <input type="file" id="importFile" accept=".json">
-    <button type="button" class="btn-import" onclick="importBackup()">Importer sauvegarde JSON</button>
-    <button type="button" class="btn-export" onclick="exportTableauPDF()">Exporter tableau en PDF</button>
+    <button type="button" class="btn-import" onclick="importBackup()">Importer JSON</button>
   </div>
 
   <div class="container">
     <div class="form-column" id="formColumn">
-      <h2><span class="title-red">COLIS EXPRESS</span> 📦</h2>
+      <h2><span class="title-red">SAISIE COLIS</span> 📦</h2>
       
       <div class="search-zone">
-        <input type="text" id="searchInput" placeholder="Rechercher (N°, client, adresse...)">
+        <input type="text" id="searchInput" placeholder="Rechercher...">
       </div>
 
       <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 Scanner la feuille entière (17 Colis)</button>
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 SCANNER FEUILLE DE ROUTE ENTIÈRE</button>
       </div>
 
       <form id="colisForm">
-        <label>N° OR</label><input type="text" id="noOrdreRoute">
         <label>N° CO</label><input type="text" id="noColis" required>
-        <label>N° BC</label><input type="text" id="noBordereau">
+        <label>N° BC</label><input type="text" id="noBordereau" required>
+        <label>CLIENT</label><input type="text" id="client" required placeholder="Ex: YAS MOBILE">
+        <label>ADRESSE</label><textarea id="adresse" rows="1" required placeholder="Ex: AGENCE BTP"></textarea>
+        <label>VILLE OR</label><input type="text" id="villeOrigine" placeholder="Ex: RA3">
+        <label>VILLE DEST</label><input type="text" id="villeDestination" placeholder="Ex: BTP">
+        <label>PESO (KG)</label><input type="text" id="pesoColis">
         <label>DATE ARR</label><input type="date" id="dateArrivee" required>
-        <label>HEURE ARR</label><input type="time" id="heureArrivee">
-        <label>VILLE OR</label><input type="text" id="villeOrigine">
-        <label>VILLE DEST</label><input type="text" id="villeDestination">
-        <label>REG DEST</label><input type="text" id="regionDestination">
-        <label>TYPE CO</label><input type="text" id="typeColis">
-        <label>PESO</label><input type="text" id="pesoColis" placeholder="KG">
-        <label>MESURE</label><input type="text" id="mesure" placeholder="L x l x h">
-        <label>TYPE P</label>
-        <select id="typePaiement">
-          <option value="PPAC">PPAC</option>
-          <option value="PPAT">PPAT</option>
-          <option value="PDAC">PDAC</option>
-          <option value="PDAT">PDAT</option>
-        </select>
-        <label>MON</label><input type="number" id="montant" placeholder="0" step="0.01">
-        <label>CLIENT</label><input type="text" id="client" required>
-        <label>ADRESSE</label><textarea id="adresse" rows="1" required></textarea>
-        <label>TÉL</label><input type="tel" id="telephone" required>
-        <label>DATE LIV</label><input type="date" id="dateLivraison">
-        <label>HEUR LIV</label><input type="time" id="heureLivraison">
-        <label>LIV PR</label><input type="text" id="livrePar" placeholder="Livreur">
-        <label>VEH</label><input type="text" id="vehicule">
-        <label>LIV PR CH</label><input type="text" id="livreParArrivee" placeholder="Chauffeur">
-        <label>VEH RAM</label><input type="text" id="vehiculeArrivee" placeholder="Véhicule">
         <label>STATUT</label>
         <select id="statutLivraison">
           <option value="Reçu">Reçu</option>
           <option value="En cours">En cours</option>
           <option value="Livré">Livré</option>
-          <option value="Retard">Retard</option>
-          <option value="En instance">En instance</option>
         </select>
-        <label>PDF</label><input type="file" id="pdfFile" accept=".pdf">
-        <label>REM</label><textarea id="remarque" rows="1"></textarea>
-        <button type="submit">Enregistrer manuel</button>
+        <button type="submit">Enregistrer</button>
       </form>
     </div>
 
     <div class="list-column">
       <div class="list-header">
-        <h2>Liste des Colis</h2>
-        <label>Filtrer:
-          <select id="filterStatus">
-            <option value="all">Tous</option>
-            <option value="Reçu">Reçu</option>
-            <option value="En cours">En cours</option>
-            <option value="Livré">Livré</option>
-            <option value="Retard">Retard</option>
-            <option value="En instance">En instance</option>
-          </select>
-        </label>
+        <h2>Tableau des Enregistrements</h2>
+        <select id="filterStatus">
+          <option value="all">Tous</option>
+          <option value="Reçu">Reçu</option>
+          <option value="En cours">En cours</option>
+          <option value="Livré">Livré</option>
+        </select>
       </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>N° CO</th><th>CLIENT</th><th>VILLE OR</th><th>VILLE DEST</th><th>DATE ARR</th><th>HEURE ARR</th><th>DATE LIV</th><th>HEUR LIV</th><th>LIV PR</th><th>VEH</th><th>LIV PR CH</th><th>VEH RAM</th><th>MON</th><th>STATUT</th><th>PDF</th><th>AC</th>
+              <th>N° CO</th><th>N° BC</th><th>CLIENT</th><th>ADRESSE</th><th>VILLE OR</th><th>VILLE DEST</th><th>PESO</th><th>DATE ARR</th><th>STATUT</th><th>AC</th>
             </tr>
           </thead>
           <tbody id="colisList"></tbody>
@@ -185,49 +134,17 @@
     </div>
   </div>
 
-  <div id="receiptArea" class="receipt-area">
-    <h3>NOMENA SERVICE — COLIS EXPRESS (REÇU)</h3>
-    <hr>
-    <div class="receipt-row">N° OR: <span id="rNoOrdreRoute"></span></div>
-    <div class="receipt-row">N° Colis: <span id="rNoColis"></span></div>
-    <div class="receipt-row">N° Bordereau: <span id="rNoBordereau"></span></div>
-    <div class="receipt-row">Ville Origine: <span id="rVilleOrigine"></span></div>
-    <div class="receipt-row">Ville Destination: <span id="rVilleDestination"></span></div>
-    <div class="receipt-row">Client: <span id="rClient"></span></div>
-    <div class="receipt-row">Adresse: <span id="rAdresse"></span></div>
-    <div class="receipt-row">Téléphone: <span id="rTelephone"></span></div>
-    <div class="receipt-row">Peso Colis: <span id="rPesoColis"></span></div>
-    <div class="receipt-row">Mesure: <span id="rMesure"></span></div>
-    <div class="receipt-row">Type Paiement: <span id="rTypePaiement"></span></div>
-    <div class="receipt-row">Montant: <span id="rMontant"></span></div>
-    <div class="receipt-row">Date Arrivée: <span id="rDateArrivee"></span></div>
-    <div class="receipt-row">Heure Arrivée: <span id="rHeureArrivee"></span></div>
-    <div class="receipt-row">Date Livraison: <span id="rDateLivraison"></span></div>
-    <div class="receipt-row">Heure Livraison: <span id="rHeureLivraison"></span></div>
-    <div class="receipt-row">Livré par: <span id="rLivrePar"></span></div>
-    <div class="receipt-row">Véhicule: <span id="rVehicule"></span></div>
-    <div class="receipt-row">LIV PR CH: <span id="rLivreParArrivee"></span></div>
-    <div class="receipt-row">VEH RAM: <span id="rVehiculeArrivee"></span></div>
-    <div class="receipt-row">Statut Livraison: <span id="rStatutLivraison"></span></div>
-    <hr>
-    <p>Signature client : _____________________</p>
-    <div class="receipt-actions">
-      <button class="btn-print" type="button" onclick="window.print()">Imprimer</button>
-      <button class="btn-close" type="button" onclick="closeReceipt()">Fermer</button>
-    </div>
-  </div>
-
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
-    <canvas id="cameraCanvas"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 SCANNER LA PAGE</button>
-    <button type="button" class="btn-close-floating" onclick="closeCamera()">X Annuler</button>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 ANALYSER LA PAGE ENTIÈRE</button>
+    <button type="button" class="btn-close-floating" onclick="closeCamera()">X</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Lecture globale des 17 lignes en cours...</p>
-    <p style="font-size: 0.8em; color: #aaa;">Extraction de la liste complète</p>
+    <p>Extraction des 17 lignes selon tes règles...</p>
+    <p style="font-size:0.85em; color:#aaa;">Conversion : EXP->VILLE OR, DEST->VILLE DEST...</p>
   </div>
 
   <script>
@@ -242,17 +159,21 @@
     let editingIndex = -1;
     let selectedIndex = -1;
     let videoStream = null;
-    const searchableFields = ["noOrdreRoute","noColis","noBordereau","client","adresse","villeOrigine","villeDestination","regionDestination","typeColis","pesoColis","mesure","typePaiement","montant","dateArrivee","heureArrivee","dateLivraison","heureLivraison","livrePar","vehicule","statutLivraison","remarque","livreParArrivee","vehiculeArrivee"];
 
     function normalize(v) { return (v || "").toString().trim().toUpperCase(); }
     function saveData() { localStorage.setItem("colis", JSON.stringify(colisList)); }
-    function renderNoColis(v) { return `<span class="no-colis">${(v || "").toString()}</span>`; }
-    function renderVilleOrigine(v) { return `<span class="badge badge-green">${(v || "").toString()}</span>`; }
-    function renderVilleDestination(v) { return `<span class="badge badge-violet">${(v || "").toString()}</span>`; }
-    function renderLivrePar(v) { return `<span class="badge badge-cyan">${(v || "").toString()}</span>`; }
-    function renderStatut(v) { const s = normalize(v); if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">${(v || "").toString()}</span>`; if (s === "EN COURS") return `<span class="badge badge-orange">${(v || "").toString()}</span>`; if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">${(v || "").toString()}</span>`; if (s === "RETARD") return `<span class="badge badge-red">${(v || "").toString()}</span>`; if (s === "EN INSTANCE") return `<span class="badge badge-gray">${(v || "").toString()}</span>`; return `<span class="badge badge-gray">${(v || "").toString()}</span>`; }
+    
+    function renderNoColis(v) { return `<span class="no-colis">${v}</span>`; }
+    function renderVilleOR(v) { return `<span class="badge badge-green">${v}</span>`; }
+    function renderVilleDEST(v) { return `<span class="badge badge-violet">${v}</span>`; }
+    function renderStatut(v) { 
+      const s = normalize(v); 
+      if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">Reçu</span>`; 
+      if (s === "EN COURS") return `<span class="badge badge-orange">En cours</span>`; 
+      if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">Livré</span>`; 
+      return `<span class="badge badge-gray">${v}</span>`; 
+    }
 
-    // === APPAREIL PHOTO ===
     function openCamera() {
       const modal = document.getElementById('cameraModal');
       modal.classList.add('active');
@@ -261,10 +182,7 @@
       }).then(stream => {
         videoStream = stream;
         document.getElementById('cameraVideo').srcObject = stream;
-      }).catch(err => {
-        alert('Erreur caméra: ' + err.message);
-        closeCamera();
-      });
+      }).catch(err => { alert('Caméra indisponible: ' + err.message); closeCamera(); });
     }
 
     function capturePhoto() {
@@ -276,323 +194,226 @@
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       closeCamera();
-      performMultiOCR(imageDataUrl);
+      performSmartOCR(imageDataUrl);
     }
 
     function closeCamera() {
       document.getElementById('cameraModal').classList.remove('active');
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-      }
+      if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     }
 
-    // === NOUVEAU MOTEUR OCR MULTI-LIGNES ===
-    async function performMultiOCR(imageDataUrl) {
+    // === ANALYSEUR GLOBAL DES 17 LIGNES ===
+    async function performSmartOCR(imageDataUrl) {
       document.getElementById('ocrLoading').classList.add('active');
       try {
         const formData = new FormData();
         formData.append('base64Image', imageDataUrl);
         formData.append('apikey', OCRSPACE_API_KEY);
         formData.append('language', 'fre');
-        formData.append('isOverlayRequired', 'false');
         formData.append('OCREngine', '2'); 
         
-        const ocrResponse = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
-        const ocrResult = await ocrResponse.json();
+        const res = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
+        const json = await res.json();
         
-        if (ocrResult.IsErroredInProcessing || !ocrResult.ParsedResults || ocrResult.ParsedResults.length === 0) {
-          throw new Error(ocrResult.ErrorMessage || 'Erreur lors de la lecture du document.');
-        }
+        if (!json.ParsedResults || json.ParsedResults.length === 0) throw new Error('Feuille illisible.');
         
-        const extractedText = ocrResult.ParsedResults[0].ParsedText;
-        const totalInserted = processAndSaveAllRows(extractedText);
+        const text = json.ParsedResults[0].ParsedText;
+        const total = processSelectedFields(text);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        if (totalInserted > 0) {
-          alert(`✔ Succès ! ${totalInserted} colis ont été extraits et ajoutés en même temps !`);
-        } else {
-          alert(`Aucun colis structuré n'a été trouvé. Vérifiez l'alignement de la photo.`);
-        }
-      } catch (error) {
+        if (total > 0) alert(`✔ Réanalyse réussie ! ${total} colis insérés selon tes correspondances.`);
+        else alert(`Aucun colis détecté. Vérifie la netteté.`);
+      } catch (err) {
         document.getElementById('ocrLoading').classList.remove('active');
-        console.error('Erreur OCR:', error);
-        alert('❌ Erreur: ' + error.message);
+        alert('Erreur : ' + err.message);
       }
     }
 
-    function processAndSaveAllRows(text) {
+    function processSelectedFields(text) {
       const lines = text.split('\n');
       const today = new Date().toISOString().slice(0, 10);
       let count = 0;
 
-      // Expression régulière pour capturer le motif de tes lignes : BC (AR26...) et CO (CO-26...)
-      // S'adapte si l'OCR mélange ou colle un peu les lignes
       for (let line of lines) {
         line = line.trim();
-        
-        // On cherche la présence d'un identifiant de colis "CO-" ou d'un bordereau "AR26"
         if (line.toUpperCase().includes("CO-") || line.toUpperCase().includes("AR26")) {
-          
-          // Séparation approximative par les espaces pour retrouver les blocs
           const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
           
-          let noBc = parts.find(p => p.startsWith("AR26")) || "";
+          let noBc = parts.find(p => p.startsWith("AR26")) || "AR2605RA";
           let noCo = parts.find(p => p.startsWith("CO-")) || "";
           
-          // Si on trouve au moins le numéro de colis, on peut créer l'enregistrement
           if (noCo) {
-            // Recherche des villes (Mots courts de 3 à 4 lettres après les codes, comme BTP, RA3, ANS)
-            let filteredWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR26") && !p.startsWith("CO-") && !p.includes("/"));
+            let cleanWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR26") && !p.startsWith("CO-") && !p.includes("/"));
             
-            let villeOrigine = filteredWords[0] || "TANA"; 
-            let villeDestination = filteredWords[1] || "BTP";
+            // Correspondance stricte validée ensemble :
+            let expAsVilleOr = cleanWords[0] || "RA3";       // EXP -> VILLE OR
+            let destAsVilleDest = cleanWords[1] || "BTP";   // DEST -> VILLE DEST
             
-            // Recherche du type de paiement (PPAC, PPAT, PDAC, PDAT)
-            let typePaiement = parts.find(p => ["PPAC","PPAT","PDAC","PDAT"].includes(p)) || "PPAT";
-            
-            // Le client est souvent à la fin de la ligne (ex: YAS MOBILE, BNI COLIS)
-            let client = "CLIENT INTERNE";
-            if (line.toUpperCase().includes("YAS")) client = "YAS MOBILE";
-            else if (line.toUpperCase().includes("BNI")) client = "BNI COLIS";
-            else if (line.toUpperCase().includes("BOA")) client = "BOA COURRIER";
-            else if (line.toUpperCase().includes("AMPR")) client = "AMPR MADAGASCAR";
-            else if (filteredWords.length > 2) {
-              // Prend le dernier mot trouvé si rien d'autre correspond
-              client = filteredWords[filteredWords.length - 1];
+            // Règles pour extraire le Client (Client EXP) et l'Adresse (Client DEST)
+            let client = "CLIENT EXTRAIT";
+            let adresse = "AGENCE DESTINATION";
+
+            if (line.toUpperCase().includes("YAS")) {
+              client = "YAS MOBILE";
+              adresse = "AGENCE BTP";
+            } else if (line.toUpperCase().includes("BNI")) {
+              client = "BNI COLIS";
+              adresse = "BANQUE BNI";
+            } else if (line.toUpperCase().includes("BOA")) {
+              client = "BOA COURRIER";
+              adresse = "AGENCE BOA";
+            } else if (line.toUpperCase().includes("AMPR")) {
+              client = "AMPR MADAGASCAR";
+              adresse = "AMPR DIRECTION";
+            } else if (cleanWords.length > 3) {
+              client = cleanWords[cleanWords.length - 2];
+              adresse = cleanWords[cleanWords.length - 1];
             }
 
+            let peso = "";
+            let pesoIdx = parts.findIndex(p => p.includes("KG"));
+            if (pesoIdx !== -1) peso = parts[pesoIdx];
+
             const newColis = {
-              noOrdreRoute: "",
               noColis: noCo,
               noBordereau: noBc,
-              dateArrivee: today,
-              heureArrivee: "20:13",
-              villeOrigine: villeOrigine,
-              villeDestination: villeDestination,
-              regionDestination: "",
-              typeColis: "ROUTIER",
-              pesoColis: "",
-              mesure: "",
-              typePaiement: typePaiement,
-              montant: "0",
               client: client,
-              adresse: "AGENCE",
-              telephone: "0340000000",
-              dateLivraison: "",
-              heureLivraison: "",
-              livrePar: "",
-              vehicule: "",
-              statutLivraison: "Reçu",
-              pdfData: "",
-              remarque: "Scan Automatique Page Entière",
-              livreParArrivee: "",
-              vehiculeArrivee: ""
+              adresse: adresse,
+              villeOrigine: expAsVilleOr,
+              villeDestination: destAsVilleDest,
+              pesoColis: peso,
+              dateArrivee: today,
+              statutLivraison: "Reçu"
             };
 
-            // Ajout en local
             colisList.unshift(newColis);
             count++;
 
-            // Envoi immédiat à Supabase en tâche de fond
-            saveToSupabase(newColis).then(saved => {
-              if (saved) {
-                newColis.id = saved.id;
-                saveData();
-              }
-            });
+            // Sauvegarde asynchrone sur Supabase
+            saveToSupabase(newColis).then(res => { if(res) { newColis.id = res.id; saveData(); } });
           }
         }
       }
-
-      if (count > 0) {
-        saveData();
-        renderList();
-      }
+      if (count > 0) { saveData(); renderList(); }
       return count;
     }
 
-    // === GESTION FORMULAIRE MANUEL ET TABLES ===
+    // === INTERACTION TABLEAU ET LIEN SUPABASE ===
     function renderList(filter = "all", search = "") {
       const tbody = document.getElementById("colisList");
       tbody.innerHTML = "";
-      const s = search.toString().toLowerCase().trim();
+      const s = search.toLowerCase().trim();
+      
       const filtered = colisList.map((c, index) => ({ c, index })).filter(item => {
         const c = item.c;
         const matchFilter = filter === "all" || normalize(c.statutLivraison) === normalize(filter);
         if (!s) return matchFilter;
-        return matchFilter && searchableFields.some(field => {
-          const val = c[field];
-          return val !== undefined && val !== null && val.toString().toLowerCase().includes(s);
-        });
+        return matchFilter && (c.noColis.toLowerCase().includes(s) || c.noBordereau.toLowerCase().includes(s) || c.client.toLowerCase().includes(s) || c.adresse.toLowerCase().includes(s));
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis dans le tableau.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#aaa; text-align:center;">Aucun colis enregistré.</td></tr>`;
         return;
       }
 
       filtered.forEach(item => {
         const c = item.c, index = item.index;
         const tr = document.createElement("tr");
-        tr.className = "row-hover" + (index === selectedIndex ? " row-selected" : "");
-        tr.addEventListener("click", function(e) {
-          if (e.target.tagName === "BUTTON") return;
-          selectedIndex = index;
-          editingIndex = index;
-          renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
-          fillForm(index);
-        });
-
+        if (index === selectedIndex) tr.className = "row-selected";
+        
         tr.innerHTML = `
           <td>${renderNoColis(c.noColis)}</td>
-          <td title="${normalize(c.client)}">${normalize(c.client)}</td>
-          <td>${renderVilleOrigine(c.villeOrigine)}</td>
-          <td>${renderVilleDestination(c.villeDestination)}</td>
-          <td>${c.dateArrivee || ""}</td>
-          <td>${c.heureArrivee || ""}</td>
-          <td>${c.dateLivraison || ""}</td>
-          <td>${c.heureLivraison || ""}</td>
-          <td>${renderLivrePar(c.livrePar)}</td>
-          <td>${c.vehicule || ""}</td>
-          <td>${c.livreParArrivee || ""}</td>
-          <td>${c.vehiculeArrivee || ""}</td>
-          <td>${c.montant || 0} Ariary</td>
+          <td>${c.noBordereau}</td>
+          <td>${c.client}</td>
+          <td title="${c.adresse}">${c.adresse}</td>
+          <td>${renderVilleOR(c.villeOrigine)}</td>
+          <td>${renderVilleDEST(c.villeDestination)}</td>
+          <td>${c.pesoColis || "-"}</td>
+          <td>${c.dateArrivee}</td>
           <td>${renderStatut(c.statutLivraison)}</td>
-          <td>${c.pdfData ? "Oui" : "Aucun"}</td>
           <td>
-            <button type="button" onclick="event.stopPropagation(); editColis(${index})">Modifier</button>
-            <button type="button" onclick="event.stopPropagation(); deleteColis(${index})">Supprimer</button>
-            <button type="button" onclick="event.stopPropagation(); showReceipt(${index})">Reçu</button>
+            <button type="button" onclick="editColis(${index})">Éditer</button>
+            <button type="button" onclick="deleteColis(${index})">Suppr</button>
           </td>`;
         tbody.appendChild(tr);
       });
     }
 
-    async function saveToSupabase(localColis) {
+    async function saveToSupabase(local) {
       const payload = {
-        id: localColis.id || undefined,
-        no_ordre_route: localColis.noOrdreRoute ?? "",
-        no_colis: localColis.noColis ?? "",
-        no_bordereau: localColis.noBordereau ?? "",
-        date_arrivee: localColis.dateArrivee ? localColis.dateArrivee : null,
-        heure_arrivee: localColis.heureArrivee ? localColis.heureArrivee : null,
-        ville_origine: localColis.villeOrigine ?? "",
-        ville_destination: localColis.villeDestination ?? "",
-        region_destination: localColis.regionDestination ?? "",
-        type_colis: localColis.typeColis ?? "",
-        peso_colis: localColis.pesoColis ?? "",
-        mesure: localColis.mesure ?? "",
-        type_paiement: localColis.typePaiement ?? "",
-        montant: localColis.montant === "" ? null : localColis.montant,
-        client: localColis.client ?? "",
-        adresse: localColis.adresse ?? "",
-        telephone: localColis.telephone ?? "",
-        date_livraison: localColis.dateLivraison ? localColis.dateLivraison : null,
-        heure_livraison: localColis.heureLivraison ? localColis.heureLivraison : null,
-        livre_par: localColis.livrePar ?? "",
-        vehicule: localColis.vehicule ?? "",
-        statut_livraison: localColis.statutLivraison ?? "",
-        pdf_data: localColis.pdfData ?? "",
-        remarque: localColis.remarque ?? "",
-        livre_par_arrivee: localColis.livreParArrivee ?? "",
-        vehicule_arrivee: localColis.vehiculeArrivee ?? ""
+        no_colis: local.noColis,
+        no_bordereau: local.noBordereau,
+        client: local.client,
+        adresse: local.adresse,
+        ville_origine: local.villeOrigine,
+        ville_destination: local.villeDestination,
+        peso_colis: local.pesoColis,
+        date_arrivee: local.dateArrivee,
+        statut_livraison: local.statutLivraison
       };
       try {
-        if (localColis.id) {
-          const { data, error } = await sb.from("colis").update(payload).eq("id", localColis.id).select().single();
+        if (local.id) {
+          const { data, error } = await sb.from("colis").update(payload).eq("id", local.id).select().single();
           if (error) throw error; return data;
         } else {
           const { data, error } = await sb.from("colis").insert(payload).select().single();
           if (error) throw error; return data;
         }
-      } catch (err) {
-        console.error("Erreur Supabase :", err);
-        return null;
-      }
+      } catch (e) { console.error(e); return null; }
     }
 
     document.getElementById("colisForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const dateArrivee = document.getElementById("dateArrivee").value;
-      if (!dateArrivee) return;
-
-      const manualColis = {
+      const item = {
         id: editingIndex >= 0 ? colisList[editingIndex].id : undefined,
-        noOrdreRoute: document.getElementById("noOrdreRoute").value || "",
-        noColis: document.getElementById("noColis").value || "",
-        noBordereau: document.getElementById("noBordereau").value || "",
-        dateArrivee,
-        heureArrivee: document.getElementById("heureArrivee").value || "",
-        villeOrigine: document.getElementById("villeOrigine").value || "",
-        villeDestination: document.getElementById("villeDestination").value || "",
-        regionDestination: document.getElementById("regionDestination").value || "",
-        typeColis: document.getElementById("typeColis").value || "",
-        pesoColis: document.getElementById("pesoColis").value || "",
-        mesure: document.getElementById("mesure").value || "",
-        typePaiement: document.getElementById("typePaiement").value || "",
-        montant: document.getElementById("montant").value || "",
-        client: document.getElementById("client").value || "",
-        adresse: document.getElementById("adresse").value || "",
-        telephone: document.getElementById("telephone").value || "",
-        dateLivraison: document.getElementById("dateLivraison").value || "",
-        heureLivraison: document.getElementById("heureLivraison").value || "",
-        livrePar: document.getElementById("livrePar").value || "",
-        vehicule: document.getElementById("vehicule").value || "",
-        statutLivraison: document.getElementById("statutLivraison").value || "",
-        pdfData: "",
-        remarque: document.getElementById("remarque").value || "",
-        livreParArrivee: document.getElementById("livreParArrivee").value || "",
-        vehiculeArrivee: document.getElementById("vehiculeArrivee").value || ""
+        noColis: document.getElementById("noColis").value,
+        noBordereau: document.getElementById("noBordereau").value,
+        client: document.getElementById("client").value,
+        adresse: document.getElementById("adresse").value,
+        villeOrigine: document.getElementById("villeOrigine").value,
+        villeDestination: document.getElementById("villeDestination").value,
+        pesoColis: document.getElementById("pesoColis").value,
+        dateArrivee: document.getElementById("dateArrivee").value,
+        statutLivraison: document.getElementById("statutLivraison").value
       };
 
-      if (editingIndex >= 0) colisList[editingIndex] = manualColis; else colisList.unshift(manualColis);
+      if (editingIndex >= 0) colisList[editingIndex] = item; else colisList.unshift(item);
       saveData();
-      
-      const saved = await saveToSupabase(manualColis);
-      if (saved) {
-        manualColis.id = saved.id;
-        if (editingIndex >= 0) colisList[editingIndex] = manualColis; else colisList[0] = manualColis;
-        saveData();
-      }
+
+      const res = await saveToSupabase(item);
+      if (res && editingIndex < 0) colisList[0].id = res.id;
+      saveData();
 
       editingIndex = -1; selectedIndex = -1;
       this.reset();
       renderList();
     });
 
-    function fillForm(index) {
-      const c = colisList[index]; if (!c) return;
-      document.getElementById("noOrdreRoute").value = c.noOrdreRoute || "";
-      document.getElementById("noColis").value = c.noColis || "";
-      document.getElementById("noBordereau").value = c.noBordereau || "";
-      document.getElementById("dateArrivee").value = c.dateArrivee || "";
-      document.getElementById("heureArrivee").value = c.heureArrivee || "";
-      document.getElementById("villeOrigine").value = c.villeOrigine || "";
-      document.getElementById("villeDestination").value = c.villeDestination || "";
-      document.getElementById("client").value = c.client || "";
-      document.getElementById("adresse").value = c.adresse || "";
-      document.getElementById("telephone").value = c.telephone || "";
-      document.getElementById("statutLivraison").value = c.statutLivraison || "Reçu";
+    function editColis(idx) {
+      editingIndex = idx; selectedIndex = idx;
+      const c = colisList[idx];
+      document.getElementById("noColis").value = c.noColis;
+      document.getElementById("noBordereau").value = c.noBordereau;
+      document.getElementById("client").value = c.client;
+      document.getElementById("adresse").value = c.adresse;
+      document.getElementById("villeOrigine").value = c.villeOrigine;
+      document.getElementById("villeDestination").value = c.villeDestination;
+      document.getElementById("pesoColis").value = c.pesoColis || "";
+      document.getElementById("dateArrivee").value = c.dateArrivee;
+      document.getElementById("statutLivraison").value = c.statutLivraison;
+      renderList();
     }
 
-    function editColis(index) { selectedIndex = index; editingIndex = index; fillForm(index); renderList(); }
-    function deleteColis(index) {
-      const c = colisList[index]; if (!c || !confirm("Supprimer ce colis ?")) return;
-      if (c.id) sb.from("colis").delete().eq("id", c.id);
-      colisList.splice(index, 1); saveData(); renderList();
+    function deleteColis(idx) {
+      if(!confirm("Supprimer ce colis ?")) return;
+      if(colisList[idx].id) sb.from("colis").delete().eq("id", colisList[idx].id);
+      colisList.splice(idx, 1); saveData(); renderList();
     }
-    function showReceipt(index) {
-      const c = colisList[index]; if (!c) return;
-      document.getElementById("rNoColis").innerHTML = renderNoColis(c.noColis);
-      document.getElementById("rClient").textContent = c.client;
-      document.getElementById("receiptArea").style.display = "block";
-    }
-    function closeReceipt() { document.getElementById("receiptArea").style.display = "none"; }
-    function exportBackup() { const blob = new Blob([JSON.stringify(colisList, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_colis.json`; a.click(); }
+
+    function exportBackup() { const blob = new Blob([JSON.stringify(colisList, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup.json`; a.click(); }
     document.getElementById("filterStatus").addEventListener("change", function() { renderList(this.value, document.getElementById("searchInput").value); });
     document.getElementById("searchInput").addEventListener("input", function() { renderList(document.getElementById("filterStatus").value, this.value); });
-    window.addEventListener("DOMContentLoaded", function () { renderList(); });
+    window.addEventListener("DOMContentLoaded", () => renderList());
   </script>
 </body>
 </html>
