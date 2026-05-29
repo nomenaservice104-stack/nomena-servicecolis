@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOMENA SERVICE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; max-width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #f0f0f0; overflow-y: hidden; padding: 6px; }
+    header { text-align: center; margin-bottom: 5px; }
+    header h1 { margin: 0; color: #4fc3f7; font-size: 1.3em; text-transform: uppercase; }
+    .backup-box { max-width: 100%; margin: 0 auto 6px; padding: 5px 6px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .backup-box input[type="file"] { width: auto; color: #f0f0f0; max-width: 100%; }
+    .btn-export { background: #7b1fa2; }
+    .btn-import { background: #ef6c00; }
+    .btn-scan { background: #e91e63; font-size: 0.7em; padding: 4px 8px; }
+    .btn-scan:hover { background: #f06292; }
+    .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 100px); align-items: stretch; overflow: hidden; }
+    .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .form-column { flex: 0 0 260px; width: 260px; max-width: 260px; overflow: auto; }
+    .list-column { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+    h2 { margin: 0 0 5px; text-align: center; text-transform: uppercase; font-size: 0.98em; }
+    .title-red { color: #f44336; }
+    .search-zone { margin-bottom: 5px; }
+    #searchInput, input, select, textarea { width: calc(100% - 62px); padding: 2px 4px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; font-size: 0.7em; display: inline-block; max-width: 100%; min-width: 0; }
+    label { display: inline-block; width: 58px; margin-top: 2px; vertical-align: top; text-transform: uppercase; font-size: 0.6em; }
+    textarea { height: 22px; resize: none; }
+    textarea:focus { height: 36px; resize: vertical; }
+    button { padding: 3px 5px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.66em; text-transform: uppercase; margin-top: 3px; }
+    button:hover { background: #66bb6a; color: #000; }
+    .scan-buttons { display: flex; gap: 4px; margin-top: 4px; margin-bottom: 6px; }
+    .scan-buttons button { flex: 1; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; background: #2a2a2a; padding: 5px; border: 1px solid #444; border-radius: 6px; flex: 0 0 auto; }
+    #filterStatus { padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; max-width: 100%; font-size: 0.78em; }
+    .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; max-width: 100%; }
+    table { min-width: 1600px; width: max-content; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 0.76em; margin-top: 0; }
+    th, td { padding: 3px 4px; border: 1px solid #444; white-space: nowrap; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; }
+    th:nth-child(1), td:nth-child(1) { width: 170px; max-width: 170px; }
+    th:nth-child(2), td:nth-child(2) { width: 100px; max-width: 100px; }
+    th:nth-child(3), td:nth-child(3) { width: 60px; max-width: 60px; }
+    th:nth-child(4), td:nth-child(4) { width: 60px; max-width: 60px; }
+    th:nth-child(5), td:nth-child(5) { width: 80px; max-width: 80px; }
+    th:nth-child(6), td:nth-child(6) { width: 80px; max-width: 80px; }
+    th:nth-child(7), td:nth-child(7) { width: 80px; max-width: 80px; }
+    th:nth-child(8), td:nth-child(8) { width: 80px; max-width: 80px; }
+    th:nth-child(9), td:nth-child(9) { width: 70px; max-width: 70px; }
+    th:nth-child(10), td:nth-child(10) { width: 70px; max-width: 70px; }
+    th:nth-child(11), td:nth-child(11) { width: 55px; max-width: 55px; }
+    th:nth-child(12), td:nth-child(12) { width: 55px; max-width: 55px; }
+    th:nth-child(13), td:nth-child(13) { width: 45px; max-width: 45px; }
+    th:nth-child(14), td:nth-child(14) { width: 65px; max-width: 65px; }
+    th:nth-child(15), td:nth-child(15) { width: 60px; max-width: 60px; }
+    th { position: sticky; top: 0; z-index: 10; background: #333; color: #ddd; text-align: left; }
+    tr:nth-child(even) { background: #262626; }
+    tr.row-selected { background: #4fc3f7 !important; color: #000 !important; }
+    tr.row-selected td { color: #000 !important; }
+    tr.row-selected .badge { color: #fff !important; }
+    tr.row-hover:hover { background: #363636; }
+    .no-colis { display: inline-block; white-space: nowrap; font-weight: 700; letter-spacing: 0.3px; color: #4fc3f7; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; border-radius: 9999px; font-weight: 700; font-size: 0.7em; line-height: 1.1; white-space: nowrap; text-transform: uppercase; }
+    .badge-violet { background: #9c27b0; color: #fff; }
+    .badge-green { background: #4caf50; color: #fff; }
+    .badge-blue { background: #2196f3; color: #fff; }
+    .badge-orange { background: #ff9800; color: #fff; }
+    .badge-red { background: #f44336; color: #fff; }
+    .badge-gray { background: #9e9e9e; color: #fff; }
+    .badge-cyan { background: #00bcd4; color: #fff; }
+    .receipt-area { display: none; max-width: 900px; margin: 15px auto 0; background: #fff; color: #000; border: 1px solid #000; border-radius: 6px; padding: 18px 20px; }
+    .receipt-area h3 { text-align: center; margin: 0 0 10px; }
+    .receipt-area hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+    .receipt-row { margin: 4px 0; }
+    .receipt-actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+    .btn-print { background: #1565c0; }
+    .btn-close { background: #666; }
+    #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
+    #cameraModal.active { display: flex; flex-direction: column; }
+    #cameraVideo { flex: 1; width: 100%; object-fit: cover; }
+    #cameraCanvas { display: none; }
+    .camera-controls { display: flex; gap: 10px; padding: 15px; background: #222; }
+    .camera-controls button { flex: 1; padding: 12px; font-size: 1em; }
+    #cameraModal .btn-close { background: #d32f2f; }
+    .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 1001; text-align: center; }
+    .ocr-loading.active { display: block; }
+    .ocr-loading spin { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @media print { body * { visibility: hidden; } #receiptArea, #receiptArea * { visibility: visible; } #receiptArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; border: none; } .receipt-actions { display: none !important; } }
+    @media (max-width: 1200px) { body { overflow-y: auto; } .container { height: auto; flex-direction: column; overflow: visible; } .form-column, .list-column { min-width: 0; width: 100%; max-width: 100%; } .list-column { min-height: 500px; } }
+  </style>
+</head>
+<body>
+  <header><h1>NOMENA SERVICE</h1></header>
+
+  <div class="backup-box">
+    <button type="button" class="btn-export" onclick="exportBackup()">Exporter sauvegarde JSON</button>
+    <input type="file" id="importFile" accept=".json">
+    <button type="button" class="btn-import" onclick="importBackup()">Importer sauvegarde JSON</button>
+    <button type="button" class="btn-export" onclick="exportTableauPDF()">Exporter tableau en PDF</button>
+  </div>
+
+  <div class="container">
+    <div class="form-column" id="formColumn">
+      <h2><span class="title-red">COLIS EXPRESS</span> 📦</h2>
+      <div class="search-zone">
+        <input type="text" id="searchInput" placeholder="Rechercher (N°, client, adresse...)">
+      </div>
+
+      <div class="scan-buttons">
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 Scanner OR</button>
+      </div>
+
+      <form id="colisForm">
+        <label>N° OR</label><input type="text" id="noOrdreRoute">
+        <label>N° CO</label><input type="text" id="noColis" required>
+        <label>N° BC</label><input type="text" id="noBordereau">
+        <label>DATE ARR</label><input type="date" id="dateArrivee" required>
+        <label>HEURE ARR</label><input type="time" id="heureArrivee">
+        <label>VILLE OR</label><input type="text" id="villeOrigine">
+        <label>VILLE DEST</label><input type="text" id="villeDestination">
+        <label>REG DEST</label><input type="text" id="regionDestination">
+        <label>TYPE CO</label><input type="text" id="typeColis">
+        <label>PESO</label><input type="text" id="pesoColis" placeholder="KG">
+        <label>MESURE</label><input type="text" id="mesure" placeholder="L x l x h">
+        <label>TYPE P</label>
+        <select id="typePaiement">
+          <option value="PPAC">PPAC</option>
+          <option value="PPAT">PPAT</option>
+          <option value="PDAC">PDAC</option>
+          <option value="PDAT">PDAT</option>
+        </select>
+        <label>MON</label><input type="number" id="montant" placeholder="0" step="0.01">
+        <label>CLIENT</label><input type="text" id="client" required>
+        <label>ADRESSE</label><textarea id="adresse" rows="1" required></textarea>
+        <label>TÉL</label><input type="tel" id="telephone" required>
+        <label>DATE LIV</label><input type="date" id="dateLivraison">
+        <label>HEUR LIV</label><input type="time" id="heureLivraison">
+        <label>LIV PR</label><input type="text" id="livrePar" placeholder="Livreur">
+        <label>VEH</label><input type="text" id="vehicule">
+        <label>LIV PR CH</label><input type="text" id="livreParArrivee" placeholder="Chauffeur qui ramène">
+        <label>VEH RAM</label><input type="text" id="vehiculeArrivee" placeholder="Véhicule ramené">
+        <label>STATUT</label>
+        <select id="statutLivraison">
+          <option value="Reçu">Reçu</option>
+          <option value="En cours">En cours</option>
+          <option value="Livré">Livré</option>
+          <option value="Retard">Retard</option>
+          <option value="En instance">En instance</option>
+        </select>
+        <label>PDF</label><input type="file" id="pdfFile" accept=".pdf">
+        <label>REM</label><textarea id="remarque" rows="1"></textarea>
+        <button type="submit">Enregistrer</button>
+      </form>
+    </div>
+
+    <div class="list-column">
+      <div class="list-header">
+        <h2>Liste des Colis</h2>
+        <label>Filtrer:
+          <select id="filterStatus">
+            <option value="all">Tous</option>
+            <option value="Reçu">Reçu</option>
+            <option value="En cours">En cours</option>
+            <option value="Livré">Livré</option>
+            <option value="Retard">Retard</option>
+            <option value="En instance">En instance</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>N° CO</th><th>CLIENT</th><th>VILLE OR</th><th>VILLE DEST</th><th>DATE ARR</th><th>HEURE ARR</th><th>DATE LIV</th><th>HEUR LIV</th><th>LIV PR</th><th>VEH</th><th>LIV PR CH</th><th>VEH RAM</th><th>MON</th><th>STATUT</th><th>PDF</th><th>AC</th>
+            </tr>
+          </thead>
+          <tbody id="colisList"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="receiptArea" class="receipt-area">
+    <h3>NOMENA SERVICE — COLIS EXPRESS (REÇU)</h3>
+    <hr>
+    <div class="receipt-row">N° OR: <span id="rNoOrdreRoute"></span></div>
+    <div class="receipt-row">N° Colis: <span id="rNoColis"></span></div>
+    <div class="receipt-row">N° Bordereau: <span id="rNoBordereau"></span></div>
+    <div class="receipt-row">Ville Origine: <span id="rVilleOrigine"></span></div>
+    <div class="receipt-row">Ville Destination: <span id="rVilleDestination"></span></div>
+    <div class="receipt-row">Client: <span id="rClient"></span></div>
+    <div class="receipt-row">Adresse: <span id="rAdresse"></span></div>
+    <div class="receipt-row">Téléphone: <span id="rTelephone"></span></div>
+    <div class="receipt-row">Peso Colis: <span id="rPesoColis"></span></div>
+    <div class="receipt-row">Mesure: <span id="rMesure"></span></div>
+    <div class="receipt-row">Type Paiement: <span id="rTypePaiement"></span></div>
+    <div class="receipt-row">Montant: <span id="rMontant"></span></div>
+    <div class="receipt-row">Date Arrivée: <span id="rDateArrivee"></span></div>
+    <div class="receipt-row">Heure Arrivée: <span id="rHeureArrivee"></span></div>
+    <div class="receipt-row">Date Livraison: <span id="rDateLivraison"></span></div>
+    <div class="receipt-row">Heure Livraison: <span id="rHeureLivraison"></span></div>
+    <div class="receipt-row">Livré par: <span id="rLivrePar"></span></div>
+    <div class="receipt-row">Véhicule: <span id="rVehicule"></span></div>
+    <div class="receipt-row">LIV PR CH: <span id="rLivreParArrivee"></span></div>
+    <div class="receipt-row">VEH RAM: <span id="rVehiculeArrivee"></span></div>
+    <div class="receipt-row">Statut Livraison: <span id="rStatutLivraison"></span></div>
+    <hr>
+    <p>Signature client : _____________________</p>
+    <div class="receipt-actions">
+      <button class="btn-print" type="button" onclick="window.print()">Imprimer</button>
+      <button class="btn-close" type="button" onclick="closeReceipt()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Modal Caméra -->
+  <div id="cameraModal">
+    <video id="cameraVideo" autoplay playsinline></video>
+    <canvas id="cameraCanvas"></canvas>
+    <div class="camera-controls">
+      <button type="button" class="btn-scan" onclick="capturePhoto()">📸 Capturer</button>
+      <button type="button" class="btn-close" onclick="closeCamera()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Loading OCR -->
+  <div id="ocrLoading" class="ocr-loading">
+    <div><span>⏳</span></div>
+    <p>Extraction OCR en cours...</p>
+    <p style="font-size: 0.8em; color: #aaa;">Cela prend quelques secondes</p>
+  </div>
+
+  <script>
+    const supabaseUrl = "https://putlhepzxfmeqodgruyt.supabase.co";
+    const supabaseKey = "sb_publishable_bZHu3Rz9HgwvHMt2w__gEg_QhB9ecJd";
+    const { createClient } = supabase;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    // Clé API FREE OCR.space (gratuit jusqu'à 25 000 req/mois)
+    const OCRSPACE_API_KEY = " belongings"; // Clé gratuite - pas de carte requise
+
+    let colisList = JSON.parse(localStorage.getItem("colis")) || [];
+    let editingIndex = -1;
+    let selectedIndex = -1;
+    let videoStream = null;
+    const searchableFields = ["noOrdreRoute","noColis","noBordereau","client","adresse","villeOrigine","villeDestination","regionDestination","typeColis","pesoColis","mesure","typePaiement","montant","dateArrivee","heureArrivee","dateLivraison","heureLivraison","livrePar","vehicule","statutLivraison","remarque","livreParArrivee","vehiculeArrivee"];
+
+    function normalize(v) { return (v || "").toString().trim().toUpperCase(); }
+    function saveData() { localStorage.setItem("colis", JSON.stringify(colisList)); }
+    function renderNoColis(v) { return `<span class="no-colis">${(v || "").toString()}</span>`; }
+    function renderVilleOrigine(v) { return `<span class="badge badge-green">${(v || "").toString()}</span>`; }
+    function renderVilleDestination(v) { return `<span class="badge badge-violet">${(v || "").toString()}</span>`; }
+    function renderLivrePar(v) { return `<span class="badge badge-cyan">${(v || "").toString()}</span>`; }
+    function renderStatut(v) { const s = normalize(v); if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">${(v || "").toString()}</span>`; if (s === "EN COURS") return `<span class="badge badge-orange">${(v || "").toString()}</span>`; if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">${(v || "").toString()}</span>`; if (s === "RETARD") return `<span class="badge badge-red">${(v || "").toString()}</span>`; if (s === "EN INSTANCE") return `<span class="badge badge-gray">${(v || "").toString()}</span>`; return `<span class="badge badge-gray">${(v || "").toString()}</span>`; }
+
+    // === FONCTIONS SCANNER + OCR ===
+    function openCamera() {
+      const modal = document.getElementById('cameraModal');
+      modal.classList.add('active');
+      
+      navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      }).then(stream => {
+        videoStream = stream;
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = stream;
+      }).catch(err => {
+        alert('Erreur caméra: ' + err.message);
+        closeCamera();
+      });
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('cameraCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      closeCamera();
+      
+      // Envoyer à OCR.space pour extraction
+      performOCR(imageDataUrl);
+    }
+
+    function closeCamera() {
+      const modal = document.getElementById('cameraModal');
+      modal.classList.remove('active');
+      
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+    }
+
+    async function performOCR(imageDataUrl) {
+      // Afficher le loading
+      document.getElementById('ocrLoading').classList.add('active');
+      
+      try {
+        // Convertir base64 en blob
+        const response = await fetch(imageDataUrl);
+        const blob = await response.blob();
+        
+        // Créer FormData pour OCR.space
+        const formData = new FormData();
+        formData.append('base64Image', imageDataUrl);
+        formData.append('apikey', 'belongs'); // Clé gratuite OCR.space
+        formData.append('language', 'fra'); // Français
+        formData.append('isOverlayRequired', 'false');
+        
+        // Appeler OCR.space API
+        const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const ocrResult = await ocrResponse.json();
+        
+        if (ocrResult.IsErroredInProcessing || !ocrResult.ParsedResults || ocrResult.ParsedResults.length === 0) {
+          throw new Error(ocrResult.ErrorMessage || 'Erreur OCR');
+        }
+        
+        const extractedText = ocrResult.ParsedResults[0].ParsedText;
+        
+        // Extraire les 8 champs du texte OCR
+        const extractedData = extractFieldsFromOCR(extractedText);
+        
+        // Remplir automatiquement le formulaire
+        fillFormFromOCR(extractedData);
+        
+        document.getElementById('ocrLoading').classList.remove('active');
+        alert('✔ OCR terminé !\n\n8 champs remplis automatiquement :\n- N° BC\n- N° Colis\n- VILLE OR\n- VILLE DEST\n- CLIENT\n- ADRESSE\n- PESO\n- VEH RAM\n\nVérifie les données et complète les champs manquants (DATE ARR, TÉL, etc.).');
+        
+      } catch (error) {
+        document.getElementById('ocrLoading').classList.remove('active');
+        console.error('Erreur OCR:', error);
+        alert('❌ Erreur OCR: ' + error.message + '\n\nEssaie de ressortir la photo plus clairement.');
+      }
+    }
+
+    function extractFieldsFromOCR(text) {
+      const result = {
+        noBordereau: '',
+        noColis: '',
+        villeOrigine: '',
+        villeDestination: '',
+        client: '',
+        adresse: '',
+        pesoColis: '',
+        vehiculeArrivee: ''
+      };
+      
+      const lines = text.split('\n').map(l => l.trim());
+      const textUpper = text.toUpperCase();
+      
+      // Extraire N° BC (recherche "N° BC" ou "BC")
+      const bcMatch = text.match(/N°\s*BC[:\s]*([^\n]+)/i) || text.match(/BC[:\s]*([^\n]+)/i);
+      if (bcMatch) result.noBordereau = bcMatch[1].trim();
+      
+      // Extraire N° Colis
+      const colisMatch = text.match(/N°\s*COLIS[:\s]*([^\n]+)/i) || text.match(/COLIS[:\s]*([^\n]+)/i);
+      if (colisMatch) result.noColis = colisMatch[1].trim();
+      
+      // Extraire VILLE OR (EXP)
+      const expMatch = text.match(/EXP[:\s]*([A-Z]+)/i);
+      if (expMatch) result.villeOrigine = expMatch[1].trim();
+      
+      // Extraire VILLE DEST (DEST)
+      const destMatch = text.match(/DEST[:\s]*([A-Z0-9]+)/i);
+      if (destMatch) result.villeDestination = destMatch[1].trim();
+      
+      // Extraire CLIENT (CLIENT EXP)
+      const clientMatch = text.match(/CLIENT\s*EXP[:\s]*([^\n]+)/i) || text.match(/CLIENT[:\s]*([^\n]+)/i);
+      if (clientMatch) result.client = clientMatch[1].trim();
+      
+      // Extraire ADRESSE (CLIENT DEST)
+      const adresseMatch = text.match(/CLIENT\s*DEST[:\s]*([^\n]+)/i) || text.match(/ADRESSE[:\s]*([^\n]+)/i);
+      if (adresseMatch) result.adresse = adresseMatch[1].trim();
+      
+      // Extraire PESO (POIDS TOTAL)
+      const poidsMatch = text.match(/POIDS\s*TOTAL[:\s]*([\d.,]+)/i) || text.match(/POIDS[:\s]*([\d.,]+)/i);
+      if (poidsMatch) result.pesoColis = poidsMatch[1].trim();
+      
+      // Extraire VEHICULE
+      const vehMatch = text.match(/VÉHICULE[:\s]*([^\n]+)/i) || text.match(/VEH[:\s]*([^\n]+)/i);
+      if (vehMatch) result.vehiculeArrivee = vehMatch[1].trim();
+      
+      return result;
+    }
+
+    function fillFormFromOCR(data) {
+      if (data.noBordereau) document.getElementById('noBordereau').value = data.noBordereau;
+      if (data.noColis) document.getElementById('noColis').value = data.noColis;
+      if (data.villeOrigine) document.getElementById('villeOrigine').value = data.villeOrigine;
+      if (data.villeDestination) document.getElementById('villeDestination').value = data.villeDestination;
+      if (data.client) document.getElementById('client').value = data.client;
+      if (data.adresse) document.getElementById('adresse').value = data.adresse;
+      if (data.pesoColis) document.getElementById('pesoColis').value = data.pesoColis;
+      if (data.vehiculeArrivee) document.getElementById('vehiculeArrivee').value = data.vehiculeArrivee;
+      
+      // Scroll vers le formulaire
+      document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // === FIN FONCTIONS SCANNER ===
+
+    function exportBackup() {
+      const data = JSON.stringify(colisList, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const now = new Date();
+      a.href = url;
+      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}_${now.toTimeString().slice(0,8).replace(/:/g,"-")}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function importBackup() {
+      const file = document.getElementById("importFile").files[0];
+      if (!file) { alert("Choisis d'abord un fichier JSON."); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) { alert("Le fichier n'est pas valide."); return; }
+          colisList = imported;
+          saveData();
+          renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
+          alert("Sauvegarde importée avec succès.");
+        } catch (err) { alert("Erreur lors de l'importation."); }
+      };
+      reader.readAsText(file);
+    }
+
+    function readPdfAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function downloadSavedPdf(index) {
+      const c = colisList[index];
+      if (!c || !c.pdfData) { alert("Aucun fichier PDF enregistré pour ce colis."); return; }
+      let pdfData = c.pdfData;
+      if (!pdfData.startsWith("data:application/pdf;base64,")) pdfData = "data:application/pdf;base64," + pdfData;
+      const a = document.createElement("a");
+      a.href = pdfData;
+      a.download = (c.noColis ? `colis_${c.noColis}` : "colis") + ".pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function openSavedPdf(index) {
+      const c = colisList[index];
+      if (!c || !c.pdfData) { alert("Aucun fichier PDF enregistré pour ce colis."); return; }
+      let pdfData = c.pdfData;
+      if (!pdfData.startsWith("data:application/pdf;base64,")) pdfData = "data:application/pdf;base64," + pdfData;
+      const w = window.open("");
+      if (w) w.document.write('<iframe src="' + pdfData + '" style="border:0; width:100%; height:100vh;"></iframe>');
+      else alert("Le navigateur a bloqué l'ouverture de l'onglet.");
+    }
+
+    function renderList(filter = "all", search = "") {
+      const tbody = document.getElementById("colisList");
+      tbody.innerHTML = "";
+      const s = search.toString().toLowerCase().trim();
+      const filtered = colisList.map((c, index) => ({ c, index })).filter(item => {
+        const c = item.c;
+        const matchFilter = filter === "all" || normalize(c.statutLivraison) === normalize(filter);
+        if (!s) return matchFilter;
+        return matchFilter && searchableFields.some(field => {
+          const val = c[field];
+          return val !== undefined && val !== null && val.toString().toLowerCase().includes(s);
+        });
+      });
+
+      if (filtered.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis trouvé pour la recherche demandée.</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      filtered.forEach(item => {
+        const c = item.c, index = item.index;
+        const tr = document.createElement("tr");
+        tr.className = "row-hover" + (index === selectedIndex ? " row-selected" : "");
+        tr.style.cursor = "pointer";
+        tr.addEventListener("click", function(e) {
+          if (e.target.tagName === "BUTTON") return;
+          selectedIndex = index;
+          editingIndex = index;
+          renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
+          fillForm(index);
+        });
+
+        tr.innerHTML = `
+          <td>${renderNoColis(c.noColis)}</td>
+          <td style="max-width:100px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.client)}">${normalize(c.client)}</td>
+          <td style="max-width:60px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.villeOrigine)}">${renderVilleOrigine(c.villeOrigine)}</td>
+          <td style="max-width:60px; overflow:hidden; text-overflow:ellipsis;" title="${normalize(c.villeDestination)}">${renderVilleDestination(c.villeDestination)}</td>
+          <td>${c.dateArrivee || ""}</td>
+          <td>${c.heureArrivee || ""}</td>
+          <td>${c.dateLivraison || ""}</td>
+          <td>${c.heureLivraison || ""}</td>
+          <td>${renderLivrePar(c.livrePar)}</td>
+          <td>${c.vehicule || ""}</td>
+          <td>${c.livreParArrivee || ""}</td>
+          <td>${c.vehiculeArrivee || ""}</td>
+          <td>${c.montant || 0} Ariary</td>
+          <td>${renderStatut(c.statutLivraison)}</td>
+          <td>${c.pdfData ? "Oui" : "Aucun"}</td>
+          <td>
+            <button type="button" onclick="event.stopPropagation(); editColis(${index})">Modifier</button>
+            <button type="button" onclick="event.stopPropagation(); deleteColis(${index})">Supprimer</button>
+            <button type="button" onclick="event.stopPropagation(); showReceipt(${index})">Reçu</button>
+            <button type="button" onclick="event.stopPropagation(); printReceipt(${index})">Imprimer reçu</button>
+            ${c.pdfData ? `<button type="button" onclick="event.stopPropagation(); downloadSavedPdf(${index})">Télécharger PDF</button>` : ""}
+            ${c.pdfData ? `<button type="button" onclick="event.stopPropagation(); openSavedPdf(${index})">Ouvrir PDF</button>` : ""}
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function fillForm(index) {
+      const c = colisList[index];
+      if (!c) return;
+      document.getElementById("noOrdreRoute").value = c.noOrdreRoute || "";
+      document.getElementById("noColis").value = c.noColis || "";
+      document.getElementById("noBordereau").value = c.noBordereau || "";
+      document.getElementById("dateArrivee").value = c.dateArrivee || "";
+      document.getElementById("heureArrivee").value = c.heureArrivee || "";
+      document.getElementById("villeOrigine").value = c.villeOrigine || "";
+      document.getElementById("villeDestination").value = c.villeDestination || "";
+      document.getElementById("regionDestination").value = c.regionDestination || "";
+      document.getElementById("typeColis").value = c.typeColis || "";
+      document.getElementById("pesoColis").value = c.pesoColis || "";
+      document.getElementById("mesure").value = c.mesure || "";
+      document.getElementById("typePaiement").value = c.typePaiement || "PPAC";
+      document.getElementById("montant").value = c.montant || "";
+      document.getElementById("client").value = c.client || "";
+      document.getElementById("adresse").value = c.adresse || "";
+      document.getElementById("telephone").value = c.telephone || "";
+      document.getElementById("dateLivraison").value = c.dateLivraison || "";
+      document.getElementById("heureLivraison").value = c.heureLivraison || "";
+      document.getElementById("livrePar").value = c.livrePar || "";
+      document.getElementById("vehicule").value = c.vehicule || "";
+      document.getElementById("livreParArrivee").value = c.livreParArrivee || "";
+      document.getElementById("vehiculeArrivee").value = c.vehiculeArrivee || "";
+      document.getElementById("statutLivraison").value = c.statutLivraison || "Reçu";
+      document.getElementById("remarque").value = c.remarque || "";
+      document.getElementById("pdfFile").value = "";
+      document.getElementById("formColumn").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function editColis(index) {
+      selectedIndex = index;
+      editingIndex = index;
+      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
+      fillForm(index);
+    }
+
+    async function saveToSupabase(localColis) {
+      const payload = {
+        id: localColis.id || undefined,
+        no_ordre_route: localColis.noOrdreRoute ?? "",
+        no_colis: localColis.noColis ?? "",
+        no_bordereau: localColis.noBordereau ?? "",
+        date_arrivee: localColis.dateArrivee ? localColis.dateArrivee : null,
+        heure_arrivee: localColis.heureArrivee ? localColis.heureArrivee : null,
+        ville_origine: localColis.villeOrigine ?? "",
+        ville_destination: localColis.villeDestination ?? "",
+        region_destination: localColis.regionDestination ?? "",
+        type_colis: localColis.typeColis ?? "",
+        peso_colis: localColis.pesoColis ?? "",
+        mesure: localColis.mesure ?? "",
+        type_paiement: localColis.typePaiement ?? "",
+        montant: localColis.montant === "" ? null : localColis.montant,
+        client: localColis.client ?? "",
+        adresse: localColis.adresse ?? "",
+        telephone: localColis.telephone ?? "",
+        date_livraison: localColis.dateLivraison ? localColis.dateLivraison : null,
+        heure_livraison: localColis.heureLivraison ? localColis.heureLivraison : null,
+        livre_par: localColis.livrePar ?? "",
+        vehicule: localColis.vehicule ?? "",
+        statut_livraison: localColis.statutLivraison ?? "",
+        pdf_data: localColis.pdfData ?? "",
+        remarque: localColis.remarque ?? "",
+        livre_par_arrivee: localColis.livreParArrivee ?? "",
+        vehicule_arrivee: localColis.vehiculeArrivee ?? ""
+      };
+
+      if (localColis.id) {
+        const { data, error } = await sb.from("colis").update(payload).eq("id", localColis.id).select().single();
+        if (error) { console.error(error); alert("Erreur Supabase: " + error.message); return null; }
+        return data;
+      } else {
+        const { data, error } = await sb.from("colis").insert(payload).select().single();
+        if (error) { console.error(error); alert("Erreur Supabase: " + error.message); return null; }
+        return data;
+      }
+    }
+
+    async function deleteColisOnSupabase(id) {
+      if (!id) return;
+      const { error } = await sb.from("colis").delete().eq("id", id);
+      if (error) console.error("Erreur Supabase (suppression):", error);
+    }
+
+    function fillReceipt(c) {
+      document.getElementById("rNoOrdreRoute").textContent = c.noOrdreRoute || "";
+      document.getElementById("rNoColis").innerHTML = renderNoColis(c.noColis || "");
+      document.getElementById("rNoBordereau").textContent = c.noBordereau || "";
+      document.getElementById("rVilleOrigine").innerHTML = renderVilleOrigine(c.villeOrigine || "");
+      document.getElementById("rVilleDestination").innerHTML = renderVilleDestination(c.villeDestination || "");
+      document.getElementById("rClient").textContent = c.client || "";
+      document.getElementById("rAdresse").textContent = c.adresse || "";
+      document.getElementById("rTelephone").textContent = c.telephone || "";
+      document.getElementById("rPesoColis").textContent = c.pesoColis || "";
+      document.getElementById("rMesure").textContent = c.mesure || "";
+      document.getElementById("rTypePaiement").textContent = c.typePaiement || "";
+      document.getElementById("rMontant").textContent = c.montant || "";
+      document.getElementById("rDateArrivee").textContent = c.dateArrivee || "";
+      document.getElementById("rHeureArrivee").textContent = c.heureArrivee || "";
+      document.getElementById("rDateLivraison").textContent = c.dateLivraison || "";
+      document.getElementById("rHeureLivraison").textContent = c.heureLivraison || "";
+      document.getElementById("rLivrePar").textContent = c.livrePar || "";
+      document.getElementById("rVehicule").textContent = c.vehicule || "";
+      document.getElementById("rLivreParArrivee").textContent = c.livreParArrivee || "";
+      document.getElementById("rVehiculeArrivee").textContent = c.vehiculeArrivee || "";
+      document.getElementById("rStatutLivraison").innerHTML = renderStatut(c.statutLivraison || "");
+    }
+
+    function showReceipt(index) {
+      const c = colisList[index];
+      if (!c) return;
+      fillReceipt(c);
+      document.getElementById("receiptArea").style.display = "block";
+      document.getElementById("receiptArea").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function printReceipt(index) {
+      const c = colisList[index];
+      if (!c) return;
+      fillReceipt(c);
+      document.getElementById("receiptArea").style.display = "block";
+      setTimeout(() => window.print(), 100);
+    }
+
+    function closeReceipt() { document.getElementById("receiptArea").style.display = "none"; }
+
+    document.getElementById("colisForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const dateArrivee = document.getElementById("dateArrivee").value;
+      const dateLivraison = document.getElementById("dateLivraison").value;
+      if (!dateArrivee) { alert("La date d'arrivée est obligatoire."); return; }
+
+      let pdfData = "";
+      const pdfInput = document.getElementById("pdfFile");
+      if (pdfInput.files.length > 0) pdfData = await readPdfAsDataUrl(pdfInput.files[0]);
+
+      const newColis = {
+        id: editingIndex >= 0 ? colisList[editingIndex].id : undefined,
+        noOrdreRoute: document.getElementById("noOrdreRoute").value || "",
+        noColis: document.getElementById("noColis").value || "",
+        noBordereau: document.getElementById("noBordereau").value || "",
+        dateArrivee,
+        heureArrivee: document.getElementById("heureArrivee").value || "",
+        villeOrigine: document.getElementById("villeOrigine").value || "",
+        villeDestination: document.getElementById("villeDestination").value || "",
+        regionDestination: document.getElementById("regionDestination").value || "",
+        typeColis: document.getElementById("typeColis").value || "",
+        pesoColis: document.getElementById("pesoColis").value || "",
+        mesure: document.getElementById("mesure").value || "",
+        typePaiement: document.getElementById("typePaiement").value || "",
+        montant: document.getElementById("montant").value || "",
+        client: document.getElementById("client").value || "",
+        adresse: document.getElementById("adresse").value || "",
+        telephone: document.getElementById("telephone").value || "",
+        dateLivraison: dateLivraison || "",
+        heureLivraison: document.getElementById("heureLivraison").value || "",
+        livrePar: document.getElementById("livrePar").value || "",
+        vehicule: document.getElementById("vehicule").value || "",
+        statutLivraison: document.getElementById("statutLivraison").value || "",
+        pdfData,
+        remarque: document.getElementById("remarque").value || "",
+        livreParArrivee: document.getElementById("livreParArrivee").value || "",
+        vehiculeArrivee: document.getElementById("vehiculeArrivee").value || ""
+      };
+
+      if (editingIndex >= 0) {
+        if (!newColis.pdfData && colisList[editingIndex]?.pdfData) newColis.pdfData = colisList[editingIndex].pdfData;
+        colisList[editingIndex] = newColis;
+      } else {
+        colisList.unshift(newColis);
+      }
+
+      saveData();
+      const saved = await saveToSupabase(newColis);
+      if (!saved) { alert("Erreur : colis NON enregistré dans Supabase."); return; }
+
+      newColis.id = saved.id;
+      if (editingIndex >= 0) colisList[editingIndex] = newColis; else colisList[0] = newColis;
+      saveData();
+
+      alert(editingIndex >= 0 ? "Colis MODIFIÉ avec succès !" : "Colis ENREGISTRÉ dans Supabase !");
+      editingIndex = -1;
+      selectedIndex = -1;
+      this.reset();
+      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
+      closeReceipt();
+    });
+
+    function deleteColis(index) {
+      const c = colisList[index];
+      if (!c || !confirm("Supprimer ce colis ?")) return;
+      colisList.splice(index, 1);
+      saveData();
+      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
+      closeReceipt();
+      if (c.id !== undefined) deleteColisOnSupabase(c.id);
+    }
+
+    document.getElementById("filterStatus").addEventListener("change", function() { renderList(this.value, document.getElementById("searchInput").value); });
+    document.getElementById("searchInput").addEventListener("input", function() { renderList(document.getElementById("filterStatus").value, this.value); });
+    window.addEventListener("DOMContentLoaded", function () { renderList(); });
+
+    function exportTableauPDF() {
+      const tableWrapper = document.querySelector(".table-wrapper");
+      if (!tableWrapper) { alert("Tableau non trouvé."); return; }
+      const ths = document.querySelectorAll("thead th");
+      const tds = document.querySelectorAll("tbody td");
+      let hiddenActionsIndex = -1;
+      for (let i = 0; i < ths.length; i++) if (ths[i].textContent.trim() === "AC") { hiddenActionsIndex = i; ths[i].style.display = "none"; }
+      if (hiddenActionsIndex >= 0) tds.forEach(td => { if (td.cellIndex === hiddenActionsIndex) td.style.display = "none"; });
+
+      html2canvas(tableWrapper, { scale: 1 }).then(canvas => {
+        if (hiddenActionsIndex >= 0) {
+          tds.forEach(td => { if (td.cellIndex === hiddenActionsIndex) td.style.display = ""; });
+          ths[hiddenActionsIndex].style.display = "";
+        }
+        const imgData = canvas.toDataURL("image/png");
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("l", "mm", "a4");
+        const imgWidth = 280;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.save("Tableau_Livraisons.pdf");
+      }).catch(err => { console.error(err); alert("Une erreur est survenue lors de la génération du PDF."); });
+    }
+  </script>
+</body>
+</html>
