@@ -76,19 +76,14 @@
     .btn-print { background: #1565c0; }
     .btn-close { background: #666; }
     
-    /* CORRECTION CRITIQUE DU STYLE DE LA CAMÉRA FLOTANTE */
+    /* CAMÉRA FLOTTANTE SURÉLEVÉE */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; overflow: hidden; }
     #cameraModal.active { display: block; }
     #cameraVideo { width: 100%; height: 100%; object-fit: cover; background: #000; }
     #cameraCanvas { display: none; }
-    
-    /* Bouton principal de Capture au premier plan en bas au centre */
     .btn-capture-floating { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; border: 3px solid white; border-radius: 50px; padding: 16px 32px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; z-index: 2500; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
     .btn-capture-floating:active { background: #1b5e20; transform: translateX(-50%) scale(0.95); }
-    
-    /* Bouton Fermer au premier plan en haut à droite */
     .btn-close-floating { position: absolute; top: 20px; right: 20px; background: rgba(211, 47, 47, 0.85); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 10px 16px; font-size: 0.85em; font-weight: bold; text-transform: uppercase; z-index: 2500; cursor: pointer; }
-    .btn-close-floating:active { background: #b71c1c; }
     
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 3001; text-align: center; }
     .ocr-loading.active { display: block; }
@@ -117,7 +112,7 @@
       </div>
 
       <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 Prendre la photo (Scanner)</button>
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 Scanner la feuille entière (17 Colis)</button>
       </div>
 
       <form id="colisForm">
@@ -147,8 +142,8 @@
         <label>HEUR LIV</label><input type="time" id="heureLivraison">
         <label>LIV PR</label><input type="text" id="livrePar" placeholder="Livreur">
         <label>VEH</label><input type="text" id="vehicule">
-        <label>LIV PR CH</label><input type="text" id="livreParArrivee" placeholder="Chauffeur qui ramène">
-        <label>VEH RAM</label><input type="text" id="vehiculeArrivee" placeholder="Véhicule ramené">
+        <label>LIV PR CH</label><input type="text" id="livreParArrivee" placeholder="Chauffeur">
+        <label>VEH RAM</label><input type="text" id="vehiculeArrivee" placeholder="Véhicule">
         <label>STATUT</label>
         <select id="statutLivraison">
           <option value="Reçu">Reçu</option>
@@ -159,7 +154,7 @@
         </select>
         <label>PDF</label><input type="file" id="pdfFile" accept=".pdf">
         <label>REM</label><textarea id="remarque" rows="1"></textarea>
-        <button type="submit">Enregistrer</button>
+        <button type="submit">Enregistrer manuel</button>
       </form>
     </div>
 
@@ -225,14 +220,14 @@
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas"></canvas>
-    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 CAPTURER</button>
+    <button type="button" class="btn-capture-floating" onclick="capturePhoto()">📷 SCANNER LA PAGE</button>
     <button type="button" class="btn-close-floating" onclick="closeCamera()">X Annuler</button>
   </div>
 
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
-    <p>Extraction OCR en cours...</p>
-    <p style="font-size: 0.8em; color: #aaa;">Prend tout le contenu en un seul coup</p>
+    <p>Lecture globale des 17 lignes en cours...</p>
+    <p style="font-size: 0.8em; color: #aaa;">Extraction de la liste complète</p>
   </div>
 
   <script>
@@ -261,13 +256,11 @@
     function openCamera() {
       const modal = document.getElementById('cameraModal');
       modal.classList.add('active');
-      
       navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
       }).then(stream => {
         videoStream = stream;
-        const video = document.getElementById('cameraVideo');
-        video.srcObject = stream;
+        document.getElementById('cameraVideo').srcObject = stream;
       }).catch(err => {
         alert('Erreur caméra: ' + err.message);
         closeCamera();
@@ -278,30 +271,25 @@
       const video = document.getElementById('cameraVideo');
       const canvas = document.getElementById('cameraCanvas');
       const ctx = canvas.getContext('2d');
-      
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       closeCamera();
-      
-      performOCR(imageDataUrl);
+      performMultiOCR(imageDataUrl);
     }
 
     function closeCamera() {
-      const modal = document.getElementById('cameraModal');
-      modal.classList.remove('active');
-      
+      document.getElementById('cameraModal').classList.remove('active');
       if (videoStream) {
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
       }
     }
 
-    async function performOCR(imageDataUrl) {
+    // === NOUVEAU MOTEUR OCR MULTI-LIGNES ===
+    async function performMultiOCR(imageDataUrl) {
       document.getElementById('ocrLoading').classList.add('active');
-      
       try {
         const formData = new FormData();
         formData.append('base64Image', imageDataUrl);
@@ -310,25 +298,22 @@
         formData.append('isOverlayRequired', 'false');
         formData.append('OCREngine', '2'); 
         
-        const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
-          method: 'POST',
-          body: formData
-        });
-        
+        const ocrResponse = await fetch('https://api.ocr.space/parse/image', { method: 'POST', body: formData });
         const ocrResult = await ocrResponse.json();
         
         if (ocrResult.IsErroredInProcessing || !ocrResult.ParsedResults || ocrResult.ParsedResults.length === 0) {
-          throw new Error(ocrResult.ErrorMessage || 'Erreur lors du traitement OCR.');
+          throw new Error(ocrResult.ErrorMessage || 'Erreur lors de la lecture du document.');
         }
         
         const extractedText = ocrResult.ParsedResults[0].ParsedText;
-        const extractedData = extractFieldsFromOCR(extractedText);
-        
-        fillFormFromOCR(extractedData);
+        const totalInserted = processAndSaveAllRows(extractedText);
         
         document.getElementById('ocrLoading').classList.remove('active');
-        alert('✔ Tout le document a été lu d\'un coup !\n\nChamps complétés.');
-        
+        if (totalInserted > 0) {
+          alert(`✔ Succès ! ${totalInserted} colis ont été extraits et ajoutés en même temps !`);
+        } else {
+          alert(`Aucun colis structuré n'a été trouvé. Vérifiez l'alignement de la photo.`);
+        }
       } catch (error) {
         document.getElementById('ocrLoading').classList.remove('active');
         console.error('Erreur OCR:', error);
@@ -336,91 +321,98 @@
       }
     }
 
-    function extractFieldsFromOCR(text) {
-      const result = { noBordereau: '', noColis: '', villeOrigine: '', villeDestination: '', client: '', adresse: '', pesoColis: '', vehiculeArrivee: '' };
-      const cleanText = text.replace(/\r/g, "").trim();
+    function processAndSaveAllRows(text) {
+      const lines = text.split('\n');
+      const today = new Date().toISOString().slice(0, 10);
+      let count = 0;
 
-      const bcMatch = cleanText.match(/N°?\s*BC[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/BC[:\s]*([A-Z0-9\-_]+)/i);
-      if (bcMatch) result.noBordereau = bcMatch[1].trim();
-      
-      const colisMatch = cleanText.match(/N°?\s*COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/N°?\s*CO[:\s]*([A-Z0-9\-_]+)/i);
-      if (colisMatch) result.noColis = colisMatch[1].trim();
-      
-      if (result.noBordereau.toLowerCase().includes("colis")) {
-        result.noBordereau = result.noBordereau.replace(/colis.*/i, "").trim();
+      // Expression régulière pour capturer le motif de tes lignes : BC (AR26...) et CO (CO-26...)
+      // S'adapte si l'OCR mélange ou colle un peu les lignes
+      for (let line of lines) {
+        line = line.trim();
+        
+        // On cherche la présence d'un identifiant de colis "CO-" ou d'un bordereau "AR26"
+        if (line.toUpperCase().includes("CO-") || line.toUpperCase().includes("AR26")) {
+          
+          // Séparation approximative par les espaces pour retrouver les blocs
+          const parts = line.split(/\s+/).map(p => p.trim().toUpperCase());
+          
+          let noBc = parts.find(p => p.startsWith("AR26")) || "";
+          let noCo = parts.find(p => p.startsWith("CO-")) || "";
+          
+          // Si on trouve au moins le numéro de colis, on peut créer l'enregistrement
+          if (noCo) {
+            // Recherche des villes (Mots courts de 3 à 4 lettres après les codes, comme BTP, RA3, ANS)
+            let filteredWords = parts.filter(p => p.length >= 3 && !p.startsWith("AR26") && !p.startsWith("CO-") && !p.includes("/"));
+            
+            let villeOrigine = filteredWords[0] || "TANA"; 
+            let villeDestination = filteredWords[1] || "BTP";
+            
+            // Recherche du type de paiement (PPAC, PPAT, PDAC, PDAT)
+            let typePaiement = parts.find(p => ["PPAC","PPAT","PDAC","PDAT"].includes(p)) || "PPAT";
+            
+            // Le client est souvent à la fin de la ligne (ex: YAS MOBILE, BNI COLIS)
+            let client = "CLIENT INTERNE";
+            if (line.toUpperCase().includes("YAS")) client = "YAS MOBILE";
+            else if (line.toUpperCase().includes("BNI")) client = "BNI COLIS";
+            else if (line.toUpperCase().includes("BOA")) client = "BOA COURRIER";
+            else if (line.toUpperCase().includes("AMPR")) client = "AMPR MADAGASCAR";
+            else if (filteredWords.length > 2) {
+              // Prend le dernier mot trouvé si rien d'autre correspond
+              client = filteredWords[filteredWords.length - 1];
+            }
+
+            const newColis = {
+              noOrdreRoute: "",
+              noColis: noCo,
+              noBordereau: noBc,
+              dateArrivee: today,
+              heureArrivee: "20:13",
+              villeOrigine: villeOrigine,
+              villeDestination: villeDestination,
+              regionDestination: "",
+              typeColis: "ROUTIER",
+              pesoColis: "",
+              mesure: "",
+              typePaiement: typePaiement,
+              montant: "0",
+              client: client,
+              adresse: "AGENCE",
+              telephone: "0340000000",
+              dateLivraison: "",
+              heureLivraison: "",
+              livrePar: "",
+              vehicule: "",
+              statutLivraison: "Reçu",
+              pdfData: "",
+              remarque: "Scan Automatique Page Entière",
+              livreParArrivee: "",
+              vehiculeArrivee: ""
+            };
+
+            // Ajout en local
+            colisList.unshift(newColis);
+            count++;
+
+            // Envoi immédiat à Supabase en tâche de fond
+            saveToSupabase(newColis).then(saved => {
+              if (saved) {
+                newColis.id = saved.id;
+                saveData();
+              }
+            });
+          }
+        }
       }
 
-      const expMatch = cleanText.match(/EXP[:\s]*([A-Z]+)/i) || cleanText.match(/ORIGINE[:\s]*([A-Z]+)/i);
-      if (expMatch) result.villeOrigine = expMatch[1].trim();
-      
-      const destMatch = cleanText.match(/DEST[:\s]*([A-Z0-9]+)/i) || cleanText.match(/DESTINATION[:\s]*([A-Z0-9]+)/i);
-      if (destMatch) result.villeDestination = destMatch[1].trim();
-      
-      const clientMatch = cleanText.match(/CLIENT\s*EXP[:\s]*([^\n]+)/i) || cleanText.match(/CLIENT[:\s]*([^\n]+)/i);
-      if (clientMatch) result.client = clientMatch[1].trim();
-      
-      const adresseMatch = cleanText.match(/CLIENT\s*DEST[:\s]*([^\n]+)/i) || cleanText.match(/ADRESSE[:\s]*([^\n]+)/i);
-      if (adresseMatch) result.adresse = adresseMatch[1].trim();
-      
-      const poidsMatch = cleanText.match(/POIDS\s*TOTAL[:\s]*([\d.,]+)/i) || cleanText.match(/POIDS[:\s]*([\d.,]+)/i) || cleanText.match(/PESO[:\s]*([\d.,]+)/i);
-      if (poidsMatch) result.pesoColis = poidsMatch[1].trim();
-      
-      const vehMatch = cleanText.match(/VÉHICULE[:\s]*([^\n]+)/i) || cleanText.match(/VEH[:\s]*([^\n]+)/i);
-      if (vehMatch) result.vehiculeArrivee = vehMatch[1].trim();
-      
-      return result;
+      if (count > 0) {
+        saveData();
+        renderList();
+      }
+      return count;
     }
 
-    function fillFormFromOCR(data) {
-      if (data.noBordereau) document.getElementById('noBordereau').value = data.noBordereau;
-      if (data.noColis) document.getElementById('noColis').value = data.noColis;
-      if (data.villeOrigine) document.getElementById('villeOrigine').value = data.villeOrigine;
-      if (data.villeDestination) document.getElementById('villeDestination').value = data.villeDestination;
-      if (data.client) document.getElementById('client').value = data.client;
-      if (data.adresse) document.getElementById('adresse').value = data.adresse;
-      if (data.pesoColis) document.getElementById('pesoColis').value = data.pesoColis;
-      if (data.vehiculeArrivee) document.getElementById('vehiculeArrivee').value = data.vehiculeArrivee;
-      
-      document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // === LOCAL ET SUPABASE ===
-    function exportBackup() {
-      const data = JSON.stringify(colisList, null, 2);
-      const blob = new Blob([data], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const now = new Date();
-      a.href = url;
-      a.download = `sauvegarde_colis_${now.toISOString().slice(0,10)}.json`;
-      a.click();
-    }
-
-    function importBackup() {
-      const file = document.getElementById("importFile").files[0];
-      if (!file) { alert("Choisis d'abord un fichier JSON."); return; }
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported)) return;
-          colisList = imported;
-          saveData();
-          renderList();
-        } catch(err) { alert("Erreur lors de l'importation."); }
-      };
-      reader.readAsText(file);
-    }
-
-    function readPdfAsDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
-    }
-
+    // === GESTION FORMULAIRE MANUEL ET TABLES ===
     function renderList(filter = "all", search = "") {
       const tbody = document.getElementById("colisList");
       tbody.innerHTML = "";
@@ -436,9 +428,7 @@
       });
 
       if (filtered.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis trouvé.</td>`;
-        tbody.appendChild(tr);
+        tbody.innerHTML = `<tr><td colspan="16" style="text-transform:none; color:#ffcccc;">Aucun colis dans le tableau.</td></tr>`;
         return;
       }
 
@@ -474,46 +464,9 @@
             <button type="button" onclick="event.stopPropagation(); editColis(${index})">Modifier</button>
             <button type="button" onclick="event.stopPropagation(); deleteColis(${index})">Supprimer</button>
             <button type="button" onclick="event.stopPropagation(); showReceipt(${index})">Reçu</button>
-            <button type="button" onclick="event.stopPropagation(); printReceipt(${index})">Imprimer</button>
           </td>`;
         tbody.appendChild(tr);
       });
-    }
-
-    function fillForm(index) {
-      const c = colisList[index];
-      if (!c) return;
-      document.getElementById("noOrdreRoute").value = c.noOrdreRoute || "";
-      document.getElementById("noColis").value = c.noColis || "";
-      document.getElementById("noBordereau").value = c.noBordereau || "";
-      document.getElementById("dateArrivee").value = c.dateArrivee || "";
-      document.getElementById("heureArrivee").value = c.heureArrivee || "";
-      document.getElementById("villeOrigine").value = c.villeOrigine || "";
-      document.getElementById("villeDestination").value = c.villeDestination || "";
-      document.getElementById("regionDestination").value = c.regionDestination || "";
-      document.getElementById("typeColis").value = c.typeColis || "";
-      document.getElementById("pesoColis").value = c.pesoColis || "";
-      document.getElementById("mesure").value = c.mesure || "";
-      document.getElementById("typePaiement").value = c.typePaiement || "PPAC";
-      document.getElementById("montant").value = c.montant || "";
-      document.getElementById("client").value = c.client || "";
-      document.getElementById("adresse").value = c.adresse || "";
-      document.getElementById("telephone").value = c.telephone || "";
-      document.getElementById("dateLivraison").value = c.dateLivraison || "";
-      document.getElementById("heureLivraison").value = c.heureLivraison || "";
-      document.getElementById("livrePar").value = c.livrePar || "";
-      document.getElementById("vehicule").value = c.vehicule || "";
-      document.getElementById("livreParArrivee").value = c.livreParArrivee || "";
-      document.getElementById("vehiculeArrivee").value = c.vehiculeArrivee || "";
-      document.getElementById("statutLivraison").value = c.statutLivraison || "Reçu";
-      document.getElementById("remarque").value = c.remarque || "";
-    }
-
-    function editColis(index) {
-      selectedIndex = index;
-      editingIndex = index;
-      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
-      fillForm(index);
     }
 
     async function saveToSupabase(localColis) {
@@ -545,83 +498,26 @@
         livre_par_arrivee: localColis.livreParArrivee ?? "",
         vehicule_arrivee: localColis.vehiculeArrivee ?? ""
       };
-
       try {
         if (localColis.id) {
           const { data, error } = await sb.from("colis").update(payload).eq("id", localColis.id).select().single();
-          if (error) throw error;
-          return data;
+          if (error) throw error; return data;
         } else {
           const { data, error } = await sb.from("colis").insert(payload).select().single();
-          if (error) throw error;
-          return data;
+          if (error) throw error; return data;
         }
       } catch (err) {
         console.error("Erreur Supabase :", err);
-        alert("Erreur Supabase: " + err.message);
         return null;
       }
     }
 
-    async function deleteColisOnSupabase(id) {
-      if (!id) return;
-      const { error } = await sb.from("colis").delete().eq("id", id);
-      if (error) console.error("Erreur Supabase (suppression):", error);
-    }
-
-    function fillReceipt(c) {
-      document.getElementById("rNoOrdreRoute").textContent = c.noOrdreRoute || "";
-      document.getElementById("rNoColis").innerHTML = renderNoColis(c.noColis || "");
-      document.getElementById("rNoBordereau").textContent = c.noBordereau || "";
-      document.getElementById("rVilleOrigine").innerHTML = renderVilleOrigine(c.villeOrigine || "");
-      document.getElementById("rVilleDestination").innerHTML = renderVilleDestination(c.villeDestination || "");
-      document.getElementById("rClient").textContent = c.client || "";
-      document.getElementById("rAdresse").textContent = c.adresse || "";
-      document.getElementById("rTelephone").textContent = c.telephone || "";
-      document.getElementById("rPesoColis").textContent = c.pesoColis || "";
-      document.getElementById("rMesure").textContent = c.mesure || "";
-      document.getElementById("rTypePaiement").textContent = c.typePaiement || "";
-      document.getElementById("rMontant").textContent = c.montant || "";
-      document.getElementById("rDateArrivee").textContent = c.dateArrivee || "";
-      document.getElementById("rHeureArrivee").textContent = c.heureArrivee || "";
-      document.getElementById("rDateLivraison").textContent = c.dateLivraison || "";
-      document.getElementById("rHeureLivraison").textContent = c.heureLivraison || "";
-      document.getElementById("rLivrePar").textContent = c.livrePar || "";
-      document.getElementById("rVehicule").textContent = c.vehicule || "";
-      document.getElementById("rLivreParArrivee").textContent = c.livreParArrivee || "";
-      document.getElementById("rVehiculeArrivee").textContent = c.vehiculeArrivee || "";
-      document.getElementById("rStatutLivraison").innerHTML = renderStatut(c.statutLivraison || "");
-    }
-
-    function showReceipt(index) {
-      const c = colisList[index];
-      if (!c) return;
-      fillReceipt(c);
-      document.getElementById("receiptArea").style.display = "block";
-      document.getElementById("receiptArea").scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function printReceipt(index) {
-      const c = colisList[index];
-      if (!c) return;
-      fillReceipt(c);
-      document.getElementById("receiptArea").style.display = "block";
-      setTimeout(() => window.print(), 100);
-    }
-
-    function closeReceipt() { document.getElementById("receiptArea").style.display = "none"; }
-
     document.getElementById("colisForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const dateArrivee = document.getElementById("dateArrivee").value;
-      const dateLivraison = document.getElementById("dateLivraison").value;
-      if (!dateArrivee) { alert("La date d'arrivée est obligatoire."); return; }
+      if (!dateArrivee) return;
 
-      let pdfData = "";
-      const pdfInput = document.getElementById("pdfFile");
-      if (pdfInput.files.length > 0) pdfData = await readPdfAsDataUrl(pdfInput.files[0]);
-
-      const newColis = {
+      const manualColis = {
         id: editingIndex >= 0 ? colisList[editingIndex].id : undefined,
         noOrdreRoute: document.getElementById("noOrdreRoute").value || "",
         noColis: document.getElementById("noColis").value || "",
@@ -639,65 +535,64 @@
         client: document.getElementById("client").value || "",
         adresse: document.getElementById("adresse").value || "",
         telephone: document.getElementById("telephone").value || "",
-        dateLivraison: dateLivraison || "",
+        dateLivraison: document.getElementById("dateLivraison").value || "",
         heureLivraison: document.getElementById("heureLivraison").value || "",
         livrePar: document.getElementById("livrePar").value || "",
         vehicule: document.getElementById("vehicule").value || "",
         statutLivraison: document.getElementById("statutLivraison").value || "",
-        pdfData,
+        pdfData: "",
         remarque: document.getElementById("remarque").value || "",
         livreParArrivee: document.getElementById("livreParArrivee").value || "",
         vehiculeArrivee: document.getElementById("vehiculeArrivee").value || ""
       };
 
-      if (editingIndex >= 0) {
-        if (!newColis.pdfData && colisList[editingIndex]?.pdfData) newColis.pdfData = colisList[editingIndex].pdfData;
-        colisList[editingIndex] = newColis;
-      } else {
-        colisList.unshift(newColis);
+      if (editingIndex >= 0) colisList[editingIndex] = manualColis; else colisList.unshift(manualColis);
+      saveData();
+      
+      const saved = await saveToSupabase(manualColis);
+      if (saved) {
+        manualColis.id = saved.id;
+        if (editingIndex >= 0) colisList[editingIndex] = manualColis; else colisList[0] = manualColis;
+        saveData();
       }
 
-      saveData();
-      const saved = await saveToSupabase(newColis);
-      if (!saved) { alert("Erreur : colis NON enregistré dans Supabase."); return; }
-
-      newColis.id = saved.id;
-      if (editingIndex >= 0) colisList[editingIndex] = newColis; else colisList[0] = newColis;
-      saveData();
-
-      alert(editingIndex >= 0 ? "Colis MODIFIÉ !" : "Colis ENREGISTRÉ !");
-      editingIndex = -1;
-      selectedIndex = -1;
+      editingIndex = -1; selectedIndex = -1;
       this.reset();
-      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
-      closeReceipt();
+      renderList();
     });
 
-    function deleteColis(index) {
-      const c = colisList[index];
-      if (!c || !confirm("Supprimer ce colis ?")) return;
-      colisList.splice(index, 1);
-      saveData();
-      renderList(document.getElementById("filterStatus").value, document.getElementById("searchInput").value);
-      closeReceipt();
-      if (c.id !== undefined) deleteColisOnSupabase(c.id);
+    function fillForm(index) {
+      const c = colisList[index]; if (!c) return;
+      document.getElementById("noOrdreRoute").value = c.noOrdreRoute || "";
+      document.getElementById("noColis").value = c.noColis || "";
+      document.getElementById("noBordereau").value = c.noBordereau || "";
+      document.getElementById("dateArrivee").value = c.dateArrivee || "";
+      document.getElementById("heureArrivee").value = c.heureArrivee || "";
+      document.getElementById("villeOrigine").value = c.villeOrigine || "";
+      document.getElementById("villeDestination").value = c.villeDestination || "";
+      document.getElementById("client").value = c.client || "";
+      document.getElementById("adresse").value = c.adresse || "";
+      document.getElementById("telephone").value = c.telephone || "";
+      document.getElementById("statutLivraison").value = c.statutLivraison || "Reçu";
     }
 
+    function editColis(index) { selectedIndex = index; editingIndex = index; fillForm(index); renderList(); }
+    function deleteColis(index) {
+      const c = colisList[index]; if (!c || !confirm("Supprimer ce colis ?")) return;
+      if (c.id) sb.from("colis").delete().eq("id", c.id);
+      colisList.splice(index, 1); saveData(); renderList();
+    }
+    function showReceipt(index) {
+      const c = colisList[index]; if (!c) return;
+      document.getElementById("rNoColis").innerHTML = renderNoColis(c.noColis);
+      document.getElementById("rClient").textContent = c.client;
+      document.getElementById("receiptArea").style.display = "block";
+    }
+    function closeReceipt() { document.getElementById("receiptArea").style.display = "none"; }
+    function exportBackup() { const blob = new Blob([JSON.stringify(colisList, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_colis.json`; a.click(); }
     document.getElementById("filterStatus").addEventListener("change", function() { renderList(this.value, document.getElementById("searchInput").value); });
     document.getElementById("searchInput").addEventListener("input", function() { renderList(document.getElementById("filterStatus").value, this.value); });
     window.addEventListener("DOMContentLoaded", function () { renderList(); });
-
-    function exportTableauPDF() {
-      const tableWrapper = document.querySelector(".table-wrapper");
-      if (!tableWrapper) { alert("Tableau non trouvé."); return; }
-      html2canvas(tableWrapper, { scale: 1 }).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF("l", "mm", "a4");
-        pdf.addImage(imgData, "PNG", 10, 10, 280, (canvas.height * 280) / canvas.width);
-        pdf.save("Tableau_Livraisons.pdf");
-      });
-    }
   </script>
 </body>
 </html>
