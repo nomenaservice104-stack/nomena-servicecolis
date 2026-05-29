@@ -2,113 +2,51 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>NOMENA - GESTION COLIS</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>NOMENA - SCAN RÉEL</title>
+    <!-- Moteur de scan intégré -->
+    <script src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #e0e0e0; display: flex; height: 100vh; margin: 0; }
-        .side-panel { width: 350px; background: #1e1e1e; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
-        .main-panel { flex: 1; padding: 20px; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8em; color: #888; }
-        input { width: 100%; padding: 8px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; }
-        button { cursor: pointer; border: none; padding: 10px; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 5px; }
-        .btn-save { background: #4caf50; color: white; }
-        .btn-scan { background: #e91e63; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e1e1e; }
-        th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 0.9em; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7em; }
-        .bg-ok { background: #2e7d32; }
-        .bg-wait { background: #d84315; }
+        body { font-family: sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
+        .form-container { background: #1e1e1e; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
+        input { width: 90%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #444; color: white; }
+        button { width: 100%; padding: 15px; background: #e91e63; color: white; border: none; font-weight: bold; cursor: pointer; }
+        #status { color: #f44336; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="side-panel">
-    <h2>POSTE DE SAISIE</h2>
-    <button class="btn-scan" onclick="alert('Fonction Scan activée')">📷 SCANNER (AR+CO)</button>
-    <hr style="border:0; border-top:1px solid #333; margin: 20px 0;">
-    <form id="colisForm">
-        <input type="hidden" id="editIdx" value="-1">
-        <div class="form-group"><label>N° BC (AR)</label><input type="text" id="bc" required></div>
-        <div class="form-group"><label>N° COLIS (CO)</label><input type="text" id="co" required></div>
-        <div class="form-group"><label>CLIENT / DEST</label><input type="text" id="client"></div>
-        <div class="form-group"><label>LIVREUR</label><input type="text" id="livreur"></div>
-        <div class="form-group"><label>MONTANT</label><input type="number" id="montant"></div>
-        <div class="form-group"><input type="checkbox" id="isLivre"> <label style="display:inline;">COLIS LIVRÉ ?</label></div>
-        <button type="submit" class="btn-save">ENREGISTRER</button>
-        <button type="button" onclick="resetForm()">VIDER</button>
-    </form>
-</div>
+<div class="form-container">
+    <h2>SCANNER UN COLIS</h2>
+    <!-- Le bouton ouvre l'appareil photo -->
+    <input type="file" id="camera" accept="image/*" capture="environment" style="display:none">
+    <button onclick="document.getElementById('camera').click()">📷 SCANNER AR+CO</button>
+    <p id="status">Prêt à scanner...</p>
 
-<div class="main-panel">
-    <h2>TOUR DE CONTRÔLE</h2>
-    <button onclick="exportJSON()">💾 SAUVEGARDER (JSON)</button>
-    <table>
-        <thead><tr><th>AR / CO</th><th>CLIENT</th><th>LIVREUR</th><th>MONTANT</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div style="margin-top:20px;">
+        <label>N° BC (AR)</label><input type="text" id="bc">
+        <label>N° COLIS (CO)</label><input type="text" id="co">
+    </div>
 </div>
 
 <script>
-    let list = JSON.parse(localStorage.getItem('colis_data')) || [];
-
-    function render() {
-        const body = document.getElementById('tableBody');
-        body.innerHTML = list.map((c, i) => `<tr>
-            <td>${c.bc}<br><small>${c.co}</small></td>
-            <td>${c.client || '-'}</td>
-            <td>${c.livreur || '-'}</td>
-            <td>${c.montant || '0'} Ar</td>
-            <td><span class="badge ${c.livre ? 'bg-ok' : 'bg-wait'}">${c.livre ? 'LIVRÉ' : 'EN ATTENTE'}</span></td>
-            <td><button onclick="edit(${i})">ÉDITER</button></td>
-        </tr>`).join('');
-    }
-
-    document.getElementById('colisForm').onsubmit = (e) => {
-        e.preventDefault();
-        const idx = document.getElementById('editIdx').value;
-        const data = {
-            bc: document.getElementById('bc').value,
-            co: document.getElementById('co').value,
-            client: document.getElementById('client').value,
-            livreur: document.getElementById('livreur').value,
-            montant: document.getElementById('montant').value,
-            livre: document.getElementById('isLivre').checked
-        };
+    document.getElementById('camera').addEventListener('change', async (e) => {
+        const status = document.getElementById('status');
+        status.innerText = "Lecture en cours... patiente...";
         
-        if (idx == -1) list.unshift(data);
-        else list[idx] = data;
+        const file = e.target.files[0];
         
-        localStorage.setItem('colis_data', JSON.stringify(list));
-        resetForm();
-        render();
-    };
-
-    function resetForm() {
-        document.getElementById('colisForm').reset();
-        document.getElementById('editIdx').value = "-1";
-    }
-
-    function edit(i) {
-        const c = list[i];
-        document.getElementById('bc').value = c.bc;
-        document.getElementById('co').value = c.co;
-        document.getElementById('client').value = c.client;
-        document.getElementById('livreur').value = c.livreur;
-        document.getElementById('montant').value = c.montant;
-        document.getElementById('isLivre').checked = c.livre;
-        document.getElementById('editIdx').value = i;
-    }
-
-    function exportJSON() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(list));
-        const dl = document.createElement('a');
-        dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "sauvegarde_nomena.json");
-        dl.click();
-    }
-
-    render();
+        // Lancer la lecture OCR
+        Tesseract.recognize(file, 'fra').then(({ data: { text } }) => {
+            // Cherche les codes AR... et CO...
+            const arMatch = text.match(/AR[A-Z0-9]+/i);
+            const coMatch = text.match(/CO[A-Z0-9]+/i);
+            
+            if (arMatch) document.getElementById('bc').value = arMatch[0].toUpperCase();
+            if (coMatch) document.getElementById('co').value = coMatch[0].toUpperCase();
+            
+            status.innerText = "Scan terminé !";
+        });
+    });
 </script>
 </body>
 </html>
