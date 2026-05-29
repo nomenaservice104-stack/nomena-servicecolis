@@ -17,7 +17,7 @@
     .backup-box input[type="file"] { width: auto; color: #f0f0f0; max-width: 100%; }
     .btn-export { background: #7b1fa2; }
     .btn-import { background: #ef6c00; }
-    .btn-scan { background: #e91e63; font-size: 0.7em; padding: 4px 8px; }
+    .btn-scan { background: #e91e63; font-size: 0.85em; padding: 8px 12px; font-weight: bold; width: 100%; border-radius: 4px; border: none; color: white; cursor: pointer; text-transform: uppercase; }
     .btn-scan:hover { background: #f06292; }
     .container { display: flex; gap: 6px; width: 100%; max-width: 100%; height: calc(100vh - 100px); align-items: stretch; overflow: hidden; }
     .form-column, .list-column { background: #2a2a2a; border: 1px solid #444; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -32,8 +32,7 @@
     textarea:focus { height: 36px; resize: vertical; }
     button { padding: 3px 5px; background: #3a9d23; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.66em; text-transform: uppercase; margin-top: 3px; }
     button:hover { background: #66bb6a; color: #000; }
-    .scan-buttons { display: flex; gap: 4px; margin-top: 4px; margin-bottom: 6px; }
-    .scan-buttons button { flex: 1; }
+    .scan-buttons { margin-top: 4px; margin-bottom: 8px; width: 100%; }
     .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 6px; background: #2a2a2a; padding: 5px; border: 1px solid #444; border-radius: 6px; flex: 0 0 auto; }
     #filterStatus { padding: 3px 5px; border: 1px solid #555; border-radius: 4px; background: #222; color: #f0f0f0; max-width: 100%; font-size: 0.78em; }
     .table-wrapper { flex: 1; min-height: 0; overflow-x: auto; overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #2a2a2a; max-width: 100%; }
@@ -76,13 +75,17 @@
     .receipt-actions { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
     .btn-print { background: #1565c0; }
     .btn-close { background: #666; }
+    
+    /* Fenêtre plein écran caméra */
     #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
     #cameraModal.active { display: flex; flex-direction: column; }
     #cameraVideo { flex: 1; width: 100%; object-fit: cover; }
     #cameraCanvas { display: none; }
     .camera-controls { display: flex; gap: 10px; padding: 15px; background: #222; }
-    .camera-controls button { flex: 1; padding: 12px; font-size: 1em; }
-    #cameraModal .btn-close { background: #d32f2f; }
+    .camera-controls button { flex: 1; padding: 14px; font-size: 0.9em; font-weight: bold; }
+    .btn-capture { background: #3a9d23; color: white; border: none; border-radius: 4px; text-transform: uppercase; }
+    #cameraModal .btn-close { background: #d32f2f; color: white; border: none; border-radius: 4px; text-transform: uppercase; }
+    
     .ocr-loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: #fff; padding: 20px 30px; border-radius: 10px; z-index: 1001; text-align: center; }
     .ocr-loading.active { display: block; }
     .ocr-loading .spin { display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #e91e63; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
@@ -104,12 +107,13 @@
   <div class="container">
     <div class="form-column" id="formColumn">
       <h2><span class="title-red">COLIS EXPRESS</span> 📦</h2>
+      
       <div class="search-zone">
         <input type="text" id="searchInput" placeholder="Rechercher (N°, client, adresse...)">
       </div>
 
       <div class="scan-buttons">
-        <button type="button" class="btn-scan" onclick="openCamera()">📷 Scanner OR</button>
+        <button type="button" class="btn-scan" onclick="openCamera()">📷 Prendre la photo (Scanner)</button>
       </div>
 
       <form id="colisForm">
@@ -214,17 +218,15 @@
     </div>
   </div>
 
-  <!-- Modal Caméra -->
   <div id="cameraModal">
     <video id="cameraVideo" autoplay playsinline></video>
     <canvas id="cameraCanvas"></canvas>
     <div class="camera-controls">
-      <button type="button" class="btn-scan" onclick="capturePhoto()">📸 Capturer</button>
+      <button type="button" class="btn-capture" onclick="capturePhoto()">📷 Capturer l'image</button>
       <button type="button" class="btn-close" onclick="closeCamera()">Fermer</button>
     </div>
   </div>
 
-  <!-- Loading OCR -->
   <div id="ocrLoading" class="ocr-loading">
     <div class="spin"></div>
     <p>Extraction OCR en cours...</p>
@@ -253,7 +255,7 @@
     function renderLivrePar(v) { return `<span class="badge badge-cyan">${(v || "").toString()}</span>`; }
     function renderStatut(v) { const s = normalize(v); if (s === "REÇU" || s === "RECU") return `<span class="badge badge-blue">${(v || "").toString()}</span>`; if (s === "EN COURS") return `<span class="badge badge-orange">${(v || "").toString()}</span>`; if (s === "LIVRÉ" || s === "LIVRE") return `<span class="badge badge-green">${(v || "").toString()}</span>`; if (s === "RETARD") return `<span class="badge badge-red">${(v || "").toString()}</span>`; if (s === "EN INSTANCE") return `<span class="badge badge-gray">${(v || "").toString()}</span>`; return `<span class="badge badge-gray">${(v || "").toString()}</span>`; }
 
-    // === FONCTIONS SCANNER + OCR ===
+    // === FONCTIONS CAPTURE PHOTO ===
     function openCamera() {
       const modal = document.getElementById('cameraModal');
       modal.classList.add('active');
@@ -304,7 +306,7 @@
         formData.append('apikey', OCRSPACE_API_KEY);
         formData.append('language', 'fre');
         formData.append('isOverlayRequired', 'false');
-        formData.append('OCREngine', '2'); // V2 capture l'intégralité du texte d'une seule traite
+        formData.append('OCREngine', '2'); 
         
         const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
           method: 'POST',
@@ -318,7 +320,6 @@
         }
         
         const extractedText = ocrResult.ParsedResults[0].ParsedText;
-        // Découpage intelligent amélioré
         const extractedData = extractFieldsFromOCR(extractedText);
         
         fillFormFromOCR(extractedData);
@@ -333,27 +334,20 @@
       }
     }
 
-    // === CORRECTION ANOMALIE DÉTECTION N° BC / N° COLIS ===
     function extractFieldsFromOCR(text) {
       const result = { noBordereau: '', noColis: '', villeOrigine: '', villeDestination: '', client: '', adresse: '', pesoColis: '', vehiculeArrivee: '' };
-      
-      // Nettoyage initial : supprime les espaces insécables bizarres
       const cleanText = text.replace(/\r/g, "").trim();
 
-      // 1. Extraction N° BC (Empêche de déborder sur "N° Colis" s'ils sont collés)
       const bcMatch = cleanText.match(/N°?\s*BC[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/BC[:\s]*([A-Z0-9\-_]+)/i);
       if (bcMatch) result.noBordereau = bcMatch[1].trim();
       
-      // 2. Extraction N° CO / Colis
       const colisMatch = cleanText.match(/N°?\s*COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/COLIS[:\s]*([A-Z0-9\-_]+)/i) || cleanText.match(/N°?\s*CO[:\s]*([A-Z0-9\-_]+)/i);
       if (colisMatch) result.noColis = colisMatch[1].trim();
       
-      // Si par malheur le N° BC contient le mot "COLIS", on le nettoie à la volée
       if (result.noBordereau.toLowerCase().includes("colis")) {
         result.noBordereau = result.noBordereau.replace(/colis.*/i, "").trim();
       }
 
-      // 3. Extraction du reste du document (Toutes les informations d'un coup)
       const expMatch = cleanText.match(/EXP[:\s]*([A-Z]+)/i) || cleanText.match(/ORIGINE[:\s]*([A-Z]+)/i);
       if (expMatch) result.villeOrigine = expMatch[1].trim();
       
@@ -388,7 +382,7 @@
       document.getElementById('formColumn').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // === FONCTIONS LOGICIEL DE BASE ===
+    // === GESTION DES LISTES ET SUPABASE ===
     function exportBackup() {
       const data = JSON.stringify(colisList, null, 2);
       const blob = new Blob([data], { type: "application/json" });
